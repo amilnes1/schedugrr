@@ -2,6 +2,11 @@
 
 All notable changes to OpenAgenda are documented here.
 
+## 0.2.1 — 2026-08-17
+
+- Fixed the Windows release runner's Electron Builder invocation so native
+  installer packaging works without relying on a Unix-style executable shim.
+
 ## 0.2.0 — 2026-08-17
 
 - Renamed the project from OpenBoard to OpenAgenda with automatic migration of

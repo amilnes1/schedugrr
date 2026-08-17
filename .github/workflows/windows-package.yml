@@ -47,23 +47,24 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          @'
-          OpenAgenda 0.2.0 is the first public desktop preview.
-
-          Windows x64 downloads:
-
-          - `OpenAgenda-0.2.0-x64-setup.exe` — interactive installer
-          - `OpenAgenda-0.2.0-x64.zip` — portable archive
-          - `SHA256SUMS-windows.txt` — download checksums
-
-          This preview has passed OpenAgenda's unit, API, and packaged Electron
-          tests on a GitHub-hosted Windows runner. The binaries are not yet
-          Authenticode-signed, so Windows may display an Unknown Publisher or
-          Microsoft Defender SmartScreen warning. Review the source and checksum
-          before installing.
-
-          See `CHANGELOG.md` for the complete release notes.
-          '@ | Set-Content release/RELEASE_NOTES.md
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          @(
+            "OpenAgenda $version is the first public desktop preview."
+            ""
+            "Windows x64 downloads:"
+            ""
+            "- OpenAgenda-$version-x64-setup.exe — interactive installer"
+            "- OpenAgenda-$version-x64.zip — portable archive"
+            "- SHA256SUMS-windows.txt — download checksums"
+            ""
+            "This preview has passed OpenAgenda's unit, API, and packaged Electron"
+            "tests on a GitHub-hosted Windows runner. The binaries are not yet"
+            "Authenticode-signed, so Windows may display an Unknown Publisher or"
+            "Microsoft Defender SmartScreen warning. Review the source and checksum"
+            "before installing."
+            ""
+            "See CHANGELOG.md for the complete release notes."
+          ) | Set-Content release/RELEASE_NOTES.md
 
           $releaseFiles = @(
             (Get-ChildItem release/OpenAgenda-*-setup.exe).FullName

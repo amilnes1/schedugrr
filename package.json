@@ -1,7 +1,7 @@
 {
   "name": "openagenda",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "main": "desktop/main.mjs",
   "description": "A calm, tactile task planner — to-do lists and a calendar you drag tasks onto.",
