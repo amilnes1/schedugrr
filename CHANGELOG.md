@@ -2,6 +2,11 @@
 
 All notable changes to OpenAgenda are documented here.
 
+## 0.2.2 — 2026-08-17
+
+- Disabled Electron Builder's tag-triggered implicit publisher so the release
+  workflow can run packaged-app QA and checksums before publishing artifacts.
+
 ## 0.2.1 — 2026-08-17
 
 - Fixed the Windows release runner's Electron Builder invocation so native

@@ -1,7 +1,7 @@
 {
   "name": "openagenda",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "main": "desktop/main.mjs",
   "description": "A calm, tactile task planner — to-do lists and a calendar you drag tasks onto.",
@@ -30,7 +30,7 @@
     "desktop:pack": "npm run build && npm run build:native && node scripts/package-desktop.mjs --dir",
     "desktop:pack:win": "npm run build && npm run build:native && node scripts/package-desktop.mjs --win --x64 --dir",
     "desktop:dist": "npm run build && npm run build:native && node scripts/package-desktop.mjs",
-    "desktop:dist:win": "npm run build && npm run build:native && node scripts/package-desktop.mjs --win --x64",
+    "desktop:dist:win": "npm run build && npm run build:native && node scripts/package-desktop.mjs --win --x64 --publish never",
     "desktop:dist:universal": "npm run build && npm run build:native && node scripts/package-desktop.mjs --mac --universal",
     "typecheck": "tsc -b --noEmit",
     "test": "npm run test:unit && npm run test:api",
