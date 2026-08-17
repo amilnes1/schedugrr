@@ -6,7 +6,7 @@ import { seedDocument } from "./seed";
 import { persistStorage } from "./storage";
 
 /**
- * The OpenAgenda store.
+ * The ScheduGrr store.
  *
  * Every mutation is expressed as a small, explicitly named action so the same
  * surface can be driven by the UI today and by an LLM tool layer tomorrow.
@@ -264,7 +264,7 @@ export const useBoard = create<StoreState>()(
       resetToSeed: () => set(seedDocument()),
     }),
     {
-      name: "openagenda.v1",
+      name: "schedugrr.v1",
       version: 3,
       storage: persistStorage,
       migrate: (persisted) => {

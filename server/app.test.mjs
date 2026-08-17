@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { BoardStore } from "./board-store.mjs";
-import { createOpenAgendaServer } from "./app.mjs";
+import { createScheduGrrServer } from "./app.mjs";
 
 let directory;
 let dataFile;
@@ -20,7 +20,7 @@ const calendar = {
     return { granted: true, authorization: "fullAccess" };
   },
   async listCalendars() {
-    return [{ id: "calendar-1", title: "OpenAgenda", source: "iCloud", color: "#5c7a5a", writable: true }];
+    return [{ id: "calendar-1", title: "ScheduGrr", source: "iCloud", color: "#5c7a5a", writable: true }];
   },
   async updateSettings(input) {
     this.settings = { ...this.settings, ...input };
@@ -57,9 +57,9 @@ function request(path, options = {}) {
 }
 
 before(async () => {
-  directory = await mkdtemp(join(tmpdir(), "openagenda-api-test-"));
+  directory = await mkdtemp(join(tmpdir(), "schedugrr-api-test-"));
   dataFile = join(directory, "board.json");
-  server = createOpenAgendaServer(new BoardStore(dataFile), { calendar });
+  server = createScheduGrrServer(new BoardStore(dataFile), { calendar });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();
   base = `http://127.0.0.1:${address.port}`;
@@ -128,7 +128,7 @@ test("updates, schedules, and completes a task", async () => {
 
 test("returns grouped context and a machine-readable OpenAPI contract", async () => {
   const context = await (await request("/api/context")).json();
-  assert.equal(context.app, "openagenda");
+  assert.equal(context.app, "schedugrr");
   assert.equal(context.lists[0].name, "Grant");
   assert.equal(context.lists[0].tasks.length, 1);
 
@@ -141,7 +141,7 @@ test("returns grouped context and a machine-readable OpenAPI contract", async ()
 
 test("persists mutations atomically to the configured JSON file", async () => {
   const persisted = JSON.parse(await readFile(dataFile, "utf8"));
-  assert.equal(persisted.app, "openagenda");
+  assert.equal(persisted.app, "schedugrr");
   assert.equal(persisted.initialized, true);
   assert.equal(Object.keys(persisted.tasks).length, 1);
 });

@@ -1,6 +1,20 @@
 # Changelog
 
-All notable changes to OpenAgenda are documented here.
+All notable changes to ScheduGrr are documented here.
+
+## 0.3.0 — 2026-08-17
+
+- Renamed the project from OpenAgenda to ScheduGrr across the desktop app,
+  local API, packaging, documentation, and release automation.
+- Added automatic migration from OpenAgenda and OpenBoard board files,
+  browser storage, desktop preferences, and legacy environment variables.
+- Added completion Remarks with Snark, Cheer, and Hush modes. Snark is the
+  default; both speaking modes use nonrepeating, streak-aware message pools.
+- Added accessible, reduced-motion-aware paper-chit feedback anchored to the
+  task checkbox and an in-settings voice preview.
+- Applied the same completion feedback to live LLM/API edits without replaying
+  completed tasks during initial synchronization.
+- Expanded unit and packaged-app coverage for the new identity and settings.
 
 ## 0.2.2 — 2026-08-17
 

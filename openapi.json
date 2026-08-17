@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAgenda Local API",
+    "title": "ScheduGrr Local API",
     "version": "1.0.0",
-    "description": "A loopback-only JSON API for reading and editing the same lists and tasks shown in OpenAgenda. Dates use yyyy-MM-dd and optional local times use HH:mm. The macOS desktop app also exposes opt-in native calendar synchronization."
+    "description": "A loopback-only JSON API for reading and editing the same lists and tasks shown in ScheduGrr. Dates use yyyy-MM-dd and optional local times use HH:mm. The macOS desktop app also exposes opt-in native calendar synchronization."
   },
   "servers": [
     { "url": "http://127.0.0.1:8787", "description": "Default local server" }
@@ -11,7 +11,7 @@
   "paths": {
     "/api/health": {
       "get": {
-        "operationId": "checkOpenAgenda",
+        "operationId": "checkScheduGrr",
         "summary": "Check the local server and current revision",
         "responses": { "200": { "description": "Server status" } }
       }
@@ -230,7 +230,7 @@
             "type": "object",
             "required": ["app", "version", "initialized", "revision"],
             "properties": {
-              "app": { "const": "openagenda" },
+              "app": { "const": "schedugrr" },
               "version": { "const": 1 },
               "initialized": { "type": "boolean" },
               "revision": { "type": "integer" }

@@ -1,6 +1,6 @@
 # Code of conduct
 
-OpenAgenda welcomes thoughtful contributions from people of every background
+ScheduGrr welcomes thoughtful contributions from people of every background
 and experience level. Be respectful, assume good faith, critique work rather
 than people, and make space for others to participate.
 

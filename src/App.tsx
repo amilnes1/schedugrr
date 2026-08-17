@@ -5,10 +5,11 @@ import { TopBar } from "@/components/TopBar";
 import { BoardView } from "@/components/board/BoardView";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { TaskDetail } from "@/components/TaskDetail";
-import { useOpenAgendaApiSync } from "@/lib/api-sync";
+import { CompletionRemark } from "@/components/CompletionRemark";
+import { useScheduGrrApiSync } from "@/lib/api-sync";
 
 export function App() {
-  useOpenAgendaApiSync();
+  useScheduGrrApiSync();
   const view = useUI((s) => s.view);
   const theme = useUI((s) => s.theme);
   const taskFont = useUI((s) => s.taskFont);
@@ -54,6 +55,7 @@ export function App() {
       </main>
 
       <TaskDetail taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
+      <CompletionRemark />
     </div>
   );
 }

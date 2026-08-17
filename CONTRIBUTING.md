@@ -1,6 +1,6 @@
-# Contributing to OpenAgenda
+# Contributing to ScheduGrr
 
-Thanks for helping make OpenAgenda better. The project aims to stay small,
+Thanks for helping make ScheduGrr better. The project aims to stay small,
 local-first, approachable, and equally usable by people and software tools.
 
 ## Development
@@ -27,7 +27,8 @@ from Vite.
 
 ## Data and security
 
-Never commit `data/openagenda.json`, legacy `data/openboard.json`, calendar
+Never commit `data/schedugrr.json`, legacy `data/openagenda.json` or
+`data/openboard.json`, calendar
 mapping files, or exported boards; they can contain private
 task content. Do not add telemetry, hosted services, or required accounts
 without an explicit project discussion.

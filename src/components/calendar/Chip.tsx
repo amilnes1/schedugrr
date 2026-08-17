@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/Checkbox";
 interface ChipProps {
   task: Task;
   color: ColorKey;
-  onToggle: () => void;
+  onToggle: (anchor: { x: number; y: number }) => void;
   onOpen: () => void;
   dragging?: boolean;
   overlay?: boolean;
@@ -63,7 +63,7 @@ export const Chip = forwardRef<HTMLDivElement, ChipProps>(function Chip(
 export function DraggableChip(props: {
   task: Task;
   color: ColorKey;
-  onToggle: () => void;
+  onToggle: (anchor: { x: number; y: number }) => void;
   onOpen: () => void;
 }) {
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({

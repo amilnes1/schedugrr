@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const projectRoot = process.cwd();
-const output = join(projectRoot, "build", "native", "openagenda_calendar_bridge.node");
+const output = join(projectRoot, "build", "native", "schedugrr_calendar_bridge.node");
 mkdirSync(dirname(output), { recursive: true });
 
 if (process.platform !== "darwin") {

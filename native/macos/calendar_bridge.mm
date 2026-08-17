@@ -256,8 +256,8 @@ void SyncTasks(AsyncContext *context) {
     NSString *listName = [task[@"listName"] isKindOfClass:[NSString class]] ? task[@"listName"] : @"";
     NSMutableArray<NSString *> *noteParts = [NSMutableArray array];
     if (notes.length > 0) [noteParts addObject:notes];
-    if (listName.length > 0) [noteParts addObject:[NSString stringWithFormat:@"OpenAgenda list: %@", listName]];
-    [noteParts addObject:[NSString stringWithFormat:@"OpenAgenda task: %@", taskId]];
+    if (listName.length > 0) [noteParts addObject:[NSString stringWithFormat:@"ScheduGrr list: %@", listName]];
+    [noteParts addObject:[NSString stringWithFormat:@"ScheduGrr task: %@", taskId]];
     event.notes = [noteParts componentsJoinedByString:@"\n\n"];
 
     NSError *saveError = nil;
@@ -347,7 +347,7 @@ napi_value QueueOperation(napi_env env, Operation operation, std::string input =
   napi_value promise;
   napi_create_promise(env, &context->deferred, &promise);
   napi_value resourceName;
-  napi_create_string_utf8(env, "OpenAgendaCalendar", NAPI_AUTO_LENGTH, &resourceName);
+  napi_create_string_utf8(env, "ScheduGrrCalendar", NAPI_AUTO_LENGTH, &resourceName);
   napi_create_async_work(env, nullptr, resourceName, ExecuteAsync, CompleteAsync, context, &context->work);
   napi_queue_async_work(env, context->work);
   return promise;

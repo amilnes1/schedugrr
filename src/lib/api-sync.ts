@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 import { useBoard } from "./store";
+import { useRemarks } from "./remarks";
 import type { List, Task } from "./types";
 
 type ConnectionStatus = "connecting" | "connected" | "local";
@@ -36,7 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
     const data = (await response.json()) as T & { error?: string };
-    if (!response.ok) throw new Error(data.error ?? `OpenAgenda API returned ${response.status}`);
+    if (!response.ok) throw new Error(data.error ?? `ScheduGrr API returned ${response.status}`);
     return data;
   } finally {
     window.clearTimeout(timeout);
@@ -55,7 +56,7 @@ function setConnection(status: ConnectionStatus, revision: number | null, error:
  * same board is also saved to a local JSON file and external edits are pulled
  * into the open UI. This is the bridge used by coding agents and LLM tools.
  */
-export function useOpenAgendaApiSync() {
+export function useScheduGrrApiSync() {
   useEffect(() => {
     if (import.meta.env.MODE === "test") {
       setConnection("local", null);
@@ -70,10 +71,17 @@ export function useOpenAgendaApiSync() {
     let pollTimer: number | null = null;
     let unsubscribe: (() => void) | null = null;
 
-    const apply = (remote: RemoteBoard) => {
+    const apply = (remote: RemoteBoard, announceCompletions = false) => {
+      const localTasks = useBoard.getState().tasks;
+      const newlyCompleted = announceCompletions
+        ? Object.values(remote.tasks).filter((task) => task.completed && localTasks[task.id] && !localTasks[task.id].completed)
+        : [];
       applyingRemote = true;
       useBoard.getState().replaceDocument({ lists: remote.lists, tasks: remote.tasks });
       applyingRemote = false;
+      for (const task of newlyCompleted) {
+        useRemarks.getState().show(task.title || "Untitled task");
+      }
       revision = remote.revision;
       setConnection("connected", revision);
     };
@@ -112,7 +120,7 @@ export function useOpenAgendaApiSync() {
       try {
         const remote = await request<RemoteBoard>("/api/board");
         if (!active) return;
-        if (remote.initialized && remote.revision !== revision) apply(remote);
+        if (remote.initialized && remote.revision !== revision) apply(remote, true);
         else setConnection("connected", remote.revision);
       } catch (error) {
         if (!active) return;
@@ -146,3 +154,6 @@ export function useOpenAgendaApiSync() {
     };
   }, []);
 }
+
+/** Compatibility alias for integrations compiled against the previous name. */
+export const useOpenAgendaApiSync = useScheduGrrApiSync;

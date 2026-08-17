@@ -21,7 +21,7 @@ function stop(code = 0) {
 for (const child of children) {
   child.on("exit", (code, signal) => {
     if (!stopping && code !== 0) {
-      console.error(`OpenAgenda dev process exited (${signal ?? code}).`);
+      console.error(`ScheduGrr dev process exited (${signal ?? code}).`);
       stop(code ?? 1);
     }
   });

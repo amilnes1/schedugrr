@@ -38,7 +38,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
   const data = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(data.error ?? `OpenAgenda calendar API returned ${response.status}`);
+  if (!response.ok) throw new Error(data.error ?? `ScheduGrr calendar API returned ${response.status}`);
   return data;
 }
 

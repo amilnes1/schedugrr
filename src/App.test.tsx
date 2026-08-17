@@ -12,6 +12,7 @@ beforeEach(() => {
     taskTextSize: "standard",
     taskTextWeight: "medium",
     selectionTone: "accent",
+    remarkMode: "snark",
   });
 });
 
@@ -23,7 +24,7 @@ beforeEach(() => {
 describe("App", () => {
   it("mounts and shows the wordmark and both views", () => {
     render(<App />);
-    expect(screen.getByText("OpenAgenda")).toBeTruthy();
+    expect(screen.getByText("ScheduGrr")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Calendar/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Board/ })).toBeTruthy();
   });
@@ -136,6 +137,18 @@ describe("App", () => {
     expect(useUI.getState().taskTextSize).toBe("large");
     expect(useUI.getState().taskTextWeight).toBe("strong");
     expect(document.documentElement.dataset.selectionTone).toBe("sage");
+  });
+
+  it("configures and previews completion remarks", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "More options" }));
+    fireEvent.click(screen.getByRole("button", { name: /Remarks/ }));
+    const settings = screen.getByRole("region", { name: "Remarks settings" });
+    fireEvent.click(within(settings).getByRole("button", { name: "Cheer" }));
+    fireEvent.click(within(settings).getByRole("button", { name: "Say something" }));
+
+    expect(useUI.getState().remarkMode).toBe("cheer");
+    expect(screen.getByRole("status", { name: /Completed: A sample task/ })).toBeTruthy();
   });
 
   it("labels the local tool surface as LLM friendly", () => {

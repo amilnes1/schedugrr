@@ -61,7 +61,7 @@ export class CalendarSyncManager {
     this.timer = setTimeout(() => {
       this.timer = null;
       void this.syncNow().catch((error) => {
-        console.warn("OpenAgenda calendar sync failed", error);
+        console.warn("ScheduGrr calendar sync failed", error);
       });
     }, this.debounceMs);
   }

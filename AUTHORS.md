@@ -7,7 +7,7 @@
 
 ## AI-assisted development
 
-OpenAgenda has been developed with transparent AI assistance. Anthropic Claude
+ScheduGrr has been developed with transparent AI assistance. Anthropic Claude
 Opus contributed frontend design and polish work. OpenAI Codex contributed
 engineering, native integration, documentation, and testing work. Alec Milnes
 directed, reviewed, and accepted the resulting project work and remains the

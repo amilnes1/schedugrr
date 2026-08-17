@@ -1,7 +1,7 @@
 import type { List, Task } from "./types";
 
 interface DocumentFile {
-  app: "openagenda" | "openboard";
+  app: "schedugrr" | "openagenda" | "openboard";
   version: 1;
   exportedAt: string;
   lists: Record<string, List>;
@@ -11,7 +11,7 @@ interface DocumentFile {
 /** Serialize the board to a downloadable JSON file. */
 export function exportDocument(lists: Record<string, List>, tasks: Record<string, Task>) {
   const doc: DocumentFile = {
-    app: "openagenda",
+    app: "schedugrr",
     version: 1,
     exportedAt: new Date().toISOString(),
     lists,
@@ -21,7 +21,7 @@ export function exportDocument(lists: Record<string, List>, tasks: Record<string
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `openagenda-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `schedugrr-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -30,7 +30,7 @@ export function exportDocument(lists: Record<string, List>, tasks: Record<string
 export function parseDocument(text: string): { lists: Record<string, List>; tasks: Record<string, Task> } {
   const data = JSON.parse(text) as Partial<DocumentFile>;
   if (!data || typeof data !== "object" || !data.lists || !data.tasks) {
-    throw new Error("Not a valid OpenAgenda file.");
+    throw new Error("Not a valid ScheduGrr file.");
   }
   const tasks = Object.fromEntries(
     Object.entries(data.tasks).map(([id, task]) => [id, { ...task, time: task.time ?? null }]),

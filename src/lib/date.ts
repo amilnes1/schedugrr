@@ -13,7 +13,7 @@ import {
 /** Canonical calendar key: `yyyy-MM-dd` in local time. */
 export type DateKey = string;
 
-/** Weeks start on Monday throughout OpenAgenda. */
+/** Weeks start on Monday throughout ScheduGrr. */
 const WEEK_OPTS = { weekStartsOn: 1 } as const;
 
 export function toKey(date: Date): DateKey {

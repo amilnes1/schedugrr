@@ -8,6 +8,7 @@ import {
   LayoutGrid,
   Moon,
   MoreHorizontal,
+  MessageSquareText,
   Palette,
   RotateCcw,
   Sun,
@@ -20,6 +21,7 @@ import { cn } from "@/lib/cn";
 import { useApiConnection } from "@/lib/api-sync";
 import { Popover, MenuItem } from "./ui/Popover";
 import { CalendarSyncPanel } from "./CalendarSyncPanel";
+import { previewRemark } from "@/lib/remarks";
 
 export function TopBar() {
   const view = useUI((s) => s.view);
@@ -27,7 +29,7 @@ export function TopBar() {
   const theme = useUI((s) => s.theme);
   const toggleTheme = useUI((s) => s.toggleTheme);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [openPanel, setOpenPanel] = useState<"appearance" | "calendar" | null>(null);
+  const [openPanel, setOpenPanel] = useState<"appearance" | "remarks" | "calendar" | null>(null);
   const apiStatus = useApiConnection((s) => s.status);
 
   const onImport = async (file: File) => {
@@ -46,7 +48,7 @@ export function TopBar() {
         <div className="flex items-center gap-2">
           <BoardGlyph />
           <span className="hidden font-display text-[20px] font-semibold tracking-tight text-ink sm:inline">
-            OpenAgenda
+            ScheduGrr
           </span>
         </div>
         <span className="hidden font-mono text-[11px] text-ink-faint xl:inline">plan by hand</span>
@@ -118,6 +120,19 @@ export function TopBar() {
                 />
               </MenuItem>
               {openPanel === "appearance" && <AppearancePanel />}
+              <MenuItem
+                icon={<MessageSquareText className="h-4 w-4" />}
+                onClick={() => setOpenPanel((panel) => panel === "remarks" ? null : "remarks")}
+              >
+                <span className="flex-1">Remarks</span>
+                <ChevronDown
+                  className={cn(
+                    "h-3.5 w-3.5 text-ink-faint transition-transform",
+                    openPanel === "remarks" && "rotate-180",
+                  )}
+                />
+              </MenuItem>
+              {openPanel === "remarks" && <RemarksPanel />}
               <MenuItem
                 icon={<CalendarClock className="h-4 w-4" />}
                 onClick={() => setOpenPanel((panel) => panel === "calendar" ? null : "calendar")}
@@ -322,6 +337,49 @@ function AppearancePanel() {
       <p className="todo-title rounded-md bg-paper-raised px-2.5 py-2 text-ink shadow-[var(--shadow-sm)]">
         A thoughtfully weighted task
       </p>
+    </section>
+  );
+}
+
+const remarkDescriptions = {
+  snark: "ScheduGrr will judge you (affectionately).",
+  cheer: "ScheduGrr believes in you (sincerely).",
+  hush: "ScheduGrr says nothing. It's fine. This is fine.",
+} as const;
+
+function RemarksPanel() {
+  const remarkMode = useUI((state) => state.remarkMode);
+  const setRemarkMode = useUI((state) => state.setRemarkMode);
+
+  return (
+    <section
+      aria-label="Remarks settings"
+      className="mx-1 mb-1 mt-1.5 rounded-[10px] border border-line bg-paper-sunken/45 p-3"
+    >
+      <SegmentedSetting
+        label="Voice"
+        value={remarkMode}
+        options={[
+          { value: "snark", label: "Snark" },
+          { value: "cheer", label: "Cheer" },
+          { value: "hush", label: "Hush" },
+        ]}
+        onChange={setRemarkMode}
+      />
+      <p className="mt-2.5 min-h-8 text-[11.5px] leading-relaxed text-ink-soft">
+        {remarkDescriptions[remarkMode]}
+      </p>
+      <button
+        type="button"
+        disabled={remarkMode === "hush"}
+        onClick={(event) => {
+          const bounds = event.currentTarget.getBoundingClientRect();
+          previewRemark({ x: Math.max(170, bounds.left - 360), y: bounds.top });
+        }}
+        className="ring-focus mt-2 w-full rounded-[8px] border border-line bg-paper-raised px-3 py-1.5 text-[11.5px] font-medium text-ink-soft shadow-[var(--shadow-sm)] transition-colors hover:border-ink-faint hover:text-ink disabled:cursor-default disabled:opacity-45"
+      >
+        {remarkMode === "hush" ? "Quiet means quiet" : "Say something"}
+      </button>
     </section>
   );
 }

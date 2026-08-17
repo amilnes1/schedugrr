@@ -1,23 +1,23 @@
-# OpenAgenda
+# ScheduGrr
 
-[![CI](https://github.com/amilnes1/openagenda/actions/workflows/ci.yml/badge.svg)](https://github.com/amilnes1/openagenda/actions/workflows/ci.yml)
+[![CI](https://github.com/amilnes1/schedugrr/actions/workflows/ci.yml/badge.svg)](https://github.com/amilnes1/schedugrr/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-c55a3d.svg)](./LICENSE)
 
-A calm, tactile task planner. Keep simple to-do lists, then drag tasks onto a
-calendar — or between days — to plan your week by hand.
+A tactile, local-first task planner with a little growl. Keep simple to-do
+lists, then drag tasks onto a calendar—or between days—to plan by hand.
 
-OpenAgenda is a desktop-first, local application. It is designed to run on the
+ScheduGrr is a desktop-first, local application. It is designed to run on the
 owner's machine rather than as a hosted multi-user service.
 
 An Electron shell now packages the tested React and Node application as a
 native desktop install. The bundled renderer remains sandboxed, while the
 local API and filesystem persistence stay in the main process.
 
-OpenAgenda is built around two linked views:
+ScheduGrr is built around two linked views:
 
 - **Board** — today's timed schedule stays visible on the left while your lists
   remain as columns. Tasks default to high-to-low priority order; drag them
-  into any custom order and OpenAgenda remembers it. Click a list title to
+  into any custom order and ScheduGrr remembers it. Click a list title to
   rename it.
 - **Calendar** — a month grid you drop tasks onto. An **Unscheduled** tray holds
   everything that doesn't have a date yet; drag from the tray onto any day to
@@ -34,18 +34,25 @@ feel effortless.
 Today's timed schedule stays beside priority-aware lists, with manual ordering
 preserved whenever you rearrange tasks.
 
-![OpenAgenda Board view with today's schedule and four task lists](./docs/images/board.png)
+![ScheduGrr Board view with today's schedule and four task lists](./docs/images/board.png)
 
 ### Calendar
 
 Timed and date-only tasks share a month view, while the Unscheduled tray keeps
 the backlog close enough to drag onto any day.
 
-![OpenAgenda Calendar view with scheduled tasks and the Unscheduled tray](./docs/images/calendar.png)
+![ScheduGrr Calendar view with scheduled tasks and the Unscheduled tray](./docs/images/calendar.png)
 
-OpenAgenda is local-first and has no account or cloud dependency. The browser
+### Remarks
+
+Snark is the default, but completion feedback can be encouraging or silent.
+The active voice can be previewed directly from settings.
+
+![ScheduGrr Remarks settings with a playful completion message](./docs/images/remarks.png)
+
+ScheduGrr is local-first and has no account or cloud dependency. The browser
 uses `localStorage` on its own. When the included local server is running, it
-also keeps the same board in `data/openagenda.json` so scripts and LLM tools can
+also keeps the same board in `data/schedugrr.json` so scripts and LLM tools can
 read or edit it through a loopback-only API. Use **⋯ → Export as JSON** for a
 portable backup at any time.
 
@@ -53,12 +60,17 @@ The compact **⋯ → Appearance** panel controls task typeface, text size, weig
 and the system text-selection highlight. Task text defaults to a slightly
 weightier medium setting for easier scanning.
 
+Under **⋯ → Remarks**, choose how ScheduGrr reacts when work gets checked off:
+**Snark** serves affectionate, passive-aggressive paper chits by default;
+**Cheer** is genuinely encouraging; and **Hush** keeps completion wordless.
+The settings panel can preview either active voice with **Say something**.
+
 In the macOS desktop app, **⋯ → Calendar sync** can keep scheduled tasks in a
 writable calendar already configured on the Mac. The integration uses Apple's
-EventKit framework directly: OpenAgenda never receives a Google, Outlook, or
+EventKit framework directly: ScheduGrr never receives a Google, Outlook, or
 iCloud password. Timed tasks become events with a configurable duration;
 date-only tasks can optionally become all-day events. Sync is deliberately
-one-way in this release, from OpenAgenda to Calendar, so there is one clear
+one-way in this release, from ScheduGrr to Calendar, so there is one clear
 source of truth.
 
 ## Design
@@ -97,19 +109,20 @@ npm run desktop:dist:win # x64 Windows NSIS installer + ZIP
 ```
 
 On macOS, distribution artifacts appear under `release/` as a DMG and ZIP.
-The app stores its board in `~/Library/Application Support/OpenAgenda/openagenda.json`
+The app stores its board in `~/Library/Application Support/ScheduGrr/schedugrr.json`
 rather than inside the application bundle. See [Desktop distribution](./docs/DISTRIBUTION.md)
 for signing, notarization, and release details.
 
 On Windows, the Board, Calendar, timed tasks, appearance controls, JSON
 import/export, and loopback API use the same code and local-first data model.
 The Windows installer stores data under the current user's application-data
-directory. Native OS-calendar sync remains macOS-only in 0.2; see
+directory. Native OS-calendar sync remains macOS-only in 0.3; see
 [Windows support](./docs/WINDOWS.md) for the packaging path and calendar
 roadmap.
 
-Existing local data from OpenBoard is copied forward automatically on first
-launch. The original files are left in place so the rename is reversible.
+Existing local data from OpenAgenda or OpenBoard is copied forward
+automatically on first launch, including appearance preferences from the
+OpenAgenda desktop profile. Original files remain in place as a recovery path.
 
 Other scripts:
 
@@ -143,10 +156,12 @@ src/
     seed.ts      # first-run sample content
     date.ts      # calendar helpers (month grid, date keys)
     io.ts        # JSON export / import
+    remarks.ts   # completion voices, streaks, and nonrepeating message pools
   components/
     board/       # Board view + columns
     calendar/    # Calendar view, day cells, unscheduled tray
     TaskDetail.tsx  # the editing drawer
+    CompletionRemark.tsx # accessible, task-anchored paper feedback
 server/
   app.mjs           # loopback HTTP API + production static server
   board-store.mjs   # validated domain operations + atomic file writes
@@ -194,12 +209,14 @@ to `"priority"` through the list menu or API whenever desired.
 The complete OpenAPI 3.1 document is available at
 [`/openapi.json`](http://127.0.0.1:8787/openapi.json). It describes task search,
 list CRUD, scheduling, moving, completion, deletion, and full-board import.
-External edits appear in an open browser within about 1.5 seconds.
+External edits appear in an open browser within about 1.5 seconds. If an LLM
+or script completes a task while the UI is open, the selected Remark voice
+responds there too; initial synchronization does not replay old completions.
 
 The API binds to `127.0.0.1` by default, accepts browser writes only from local
-origins, and stores data outside Git. Override `OPENAGENDA_HOST`,
-`OPENAGENDA_PORT`, or `OPENAGENDA_DATA_FILE` for advanced local setups. The
-legacy `OPENBOARD_*` names remain accepted for compatibility.
+origins, and stores data outside Git. Override `SCHEDUGRR_HOST`,
+`SCHEDUGRR_PORT`, or `SCHEDUGRR_DATA_FILE` for advanced local setups. The
+legacy `OPENAGENDA_*` and `OPENBOARD_*` names remain accepted for compatibility.
 
 The client-side data model is also small and normalized, and every change flows
 through an explicitly named store action:

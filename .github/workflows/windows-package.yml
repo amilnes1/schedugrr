@@ -29,16 +29,16 @@ jobs:
       - name: Write SHA-256 checksums
         shell: pwsh
         run: |
-          Get-ChildItem release\OpenAgenda-*.exe, release\OpenAgenda-*.zip |
+          Get-ChildItem release\ScheduGrr-*.exe, release\ScheduGrr-*.zip |
             Get-FileHash -Algorithm SHA256 |
             ForEach-Object { "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)" } |
             Set-Content release\SHA256SUMS-windows.txt
       - uses: actions/upload-artifact@v7
         with:
-          name: OpenAgenda-Windows-${{ github.ref_name }}
+          name: ScheduGrr-Windows-${{ github.ref_name }}
           path: |
-            release/OpenAgenda-*-setup.exe
-            release/OpenAgenda-*.zip
+            release/ScheduGrr-*-setup.exe
+            release/ScheduGrr-*.zip
             release/SHA256SUMS-windows.txt
           if-no-files-found: error
       - name: Publish unsigned Windows prerelease
@@ -49,15 +49,15 @@ jobs:
         run: |
           $version = "${{ github.ref_name }}".TrimStart("v")
           @(
-            "OpenAgenda $version is the first public desktop preview."
+            "ScheduGrr $version is an open-source desktop planner preview."
             ""
             "Windows x64 downloads:"
             ""
-            "- OpenAgenda-$version-x64-setup.exe — interactive installer"
-            "- OpenAgenda-$version-x64.zip — portable archive"
+            "- ScheduGrr-$version-x64-setup.exe — interactive installer"
+            "- ScheduGrr-$version-x64.zip — portable archive"
             "- SHA256SUMS-windows.txt — download checksums"
             ""
-            "This preview has passed OpenAgenda's unit, API, and packaged Electron"
+            "This preview has passed ScheduGrr's unit, API, and packaged Electron"
             "tests on a GitHub-hosted Windows runner. The binaries are not yet"
             "Authenticode-signed, so Windows may display an Unknown Publisher or"
             "Microsoft Defender SmartScreen warning. Review the source and checksum"
@@ -67,13 +67,13 @@ jobs:
           ) | Set-Content release/RELEASE_NOTES.md
 
           $releaseFiles = @(
-            (Get-ChildItem release/OpenAgenda-*-setup.exe).FullName
-            (Get-ChildItem release/OpenAgenda-*.zip).FullName
+            (Get-ChildItem release/ScheduGrr-*-setup.exe).FullName
+            (Get-ChildItem release/ScheduGrr-*.zip).FullName
             (Get-Item release/SHA256SUMS-windows.txt).FullName
           )
 
           gh release create "${{ github.ref_name }}" $releaseFiles `
             --verify-tag `
             --prerelease `
-            --title "OpenAgenda ${{ github.ref_name }}" `
+            --title "ScheduGrr ${{ github.ref_name }}" `
             --notes-file release/RELEASE_NOTES.md

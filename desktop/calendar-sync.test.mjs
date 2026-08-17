@@ -13,7 +13,7 @@ afterEach(async () => {
 });
 
 async function fixture() {
-  const directory = await mkdtemp(join(tmpdir(), "openagenda-calendar-test-"));
+  const directory = await mkdtemp(join(tmpdir(), "schedugrr-calendar-test-"));
   directories.push(directory);
   const store = new BoardStore(join(directory, "board.json"));
   await store.ready;
@@ -25,7 +25,7 @@ async function fixture() {
   const bridge = {
     authorizationStatus: () => "fullAccess",
     requestFullAccess: async () => ({ granted: true, authorization: "fullAccess" }),
-    listCalendars: async () => [{ id: "cal-1", title: "OpenAgenda", source: "iCloud", color: "#5c7a5a", writable: true }],
+    listCalendars: async () => [{ id: "cal-1", title: "ScheduGrr", source: "iCloud", color: "#5c7a5a", writable: true }],
     syncTasks: async (input) => {
       calls.push(input);
       return {

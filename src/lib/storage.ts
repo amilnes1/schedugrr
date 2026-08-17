@@ -14,7 +14,7 @@ function safeStorage(): SyncStateStorage {
   try {
     const ls = globalThis.localStorage;
     if (ls && typeof ls.setItem === "function") {
-      const probe = "__openagenda_probe__";
+      const probe = "__schedugrr_probe__";
       ls.setItem(probe, "1");
       ls.removeItem(probe);
       return ls;
@@ -31,19 +31,23 @@ function safeStorage(): SyncStateStorage {
 }
 
 function withLegacyMigration(storage: SyncStateStorage): StateStorage {
-  const legacyKeys: Record<string, string> = {
-    "openagenda.v1": "openboard.v1",
-    "openagenda.ui.v1": "openboard.ui.v1",
+  const legacyKeys: Record<string, string[]> = {
+    "schedugrr.v1": ["openagenda.v1", "openboard.v1"],
+    "schedugrr.ui.v1": ["openagenda.ui.v1", "openboard.ui.v1"],
   };
   return {
     getItem: (key) => {
       const current = storage.getItem(key);
       if (current !== null) return current;
-      const legacyKey = legacyKeys[key];
-      if (!legacyKey) return null;
-      const legacy = storage.getItem(legacyKey);
-      if (legacy !== null) storage.setItem(key, legacy);
-      return legacy;
+      const candidates = legacyKeys[key] ?? [];
+      for (const legacyKey of candidates) {
+        const legacy = storage.getItem(legacyKey);
+        if (legacy !== null) {
+          storage.setItem(key, legacy);
+          return legacy;
+        }
+      }
+      return null;
     },
     setItem: (key, value) => storage.setItem(key, value),
     removeItem: (key) => storage.removeItem(key),

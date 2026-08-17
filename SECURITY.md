@@ -1,6 +1,6 @@
 # Security policy
 
-OpenAgenda is local-first. Its API binds to `127.0.0.1` by default and has no
+ScheduGrr is local-first. Its API binds to `127.0.0.1` by default and has no
 authentication, so do not expose it to an untrusted network without adding an
 authentication layer or a trusted reverse proxy.
 
@@ -9,9 +9,10 @@ than opening a public issue. Until a public contact is configured, use the
 private security-reporting feature of the Git hosting provider.
 
 Personal board data lives in browser storage and, when the development API is
-enabled, in `data/openagenda.json`. The desktop application instead writes to
+enabled, in `data/schedugrr.json`. The desktop application instead writes to
 the operating system's per-user application-data directory (for example,
-`~/Library/Application Support/OpenAgenda/openagenda.json` on macOS). These files
+`~/Library/Application Support/ScheduGrr/schedugrr.json` on macOS). OpenAgenda
+and OpenBoard data is read only as a migration source. These files
 and common environment files should remain outside version control.
 
 The Electron renderer is sandboxed with Node integration disabled, context
@@ -22,7 +23,7 @@ also be signed—and on macOS, notarized—as described in
 installers trigger an Unknown Publisher/SmartScreen warning and should be
 clearly labeled until Authenticode signing is configured.
 
-Native calendar sync is opt-in and uses Apple EventKit. OpenAgenda stores only
+Native calendar sync is opt-in and uses Apple EventKit. ScheduGrr stores only
 the selected calendar identifier, preferences, and its own task-to-event
 identifier mappings. It does not store calendar-account passwords. Disabling
 sync stops future writes; it does not silently erase calendar events. Calendar

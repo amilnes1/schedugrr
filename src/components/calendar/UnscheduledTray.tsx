@@ -5,6 +5,7 @@ import { useBoard, selectUnscheduled } from "@/lib/store";
 import type { List } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import { DraggableChip } from "./Chip";
+import { toggleTaskWithRemark } from "@/lib/remarks";
 
 export function UnscheduledTray({
   listsById,
@@ -14,7 +15,6 @@ export function UnscheduledTray({
   onOpenTask: (id: string) => void;
 }) {
   const tasks = useBoard(useShallow(selectUnscheduled));
-  const toggleTask = useBoard((s) => s.toggleTask);
   const { setNodeRef, isOver } = useDroppable({ id: "unscheduled", data: { type: "unscheduled" } });
 
   return (
@@ -45,7 +45,7 @@ export function UnscheduledTray({
               key={task.id}
               task={task}
               color={listsById[task.listId]?.color ?? "ink"}
-              onToggle={() => toggleTask(task.id)}
+              onToggle={(anchor) => toggleTaskWithRemark(task.id, anchor)}
               onOpen={() => onOpenTask(task.id)}
             />
           ))

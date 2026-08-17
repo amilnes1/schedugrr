@@ -11,7 +11,7 @@ export function SortableTaskCard({
 }: {
   task: Task;
   color: ColorKey;
-  onToggle: () => void;
+  onToggle: (anchor: { x: number; y: number }) => void;
   onOpen: () => void;
 }) {
   const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({

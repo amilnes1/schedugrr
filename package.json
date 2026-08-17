@@ -1,19 +1,19 @@
 {
-  "name": "openagenda",
+  "name": "schedugrr",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.3.0",
   "type": "module",
   "main": "desktop/main.mjs",
-  "description": "A calm, tactile task planner — to-do lists and a calendar you drag tasks onto.",
+  "description": "A local-first task board and calendar with a little growl when work gets done.",
   "author": "Alec Milnes",
   "license": "MIT",
-  "homepage": "https://github.com/amilnes1/openagenda#readme",
+  "homepage": "https://github.com/amilnes1/schedugrr#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amilnes1/openagenda.git"
+    "url": "git+https://github.com/amilnes1/schedugrr.git"
   },
   "bugs": {
-    "url": "https://github.com/amilnes1/openagenda/issues"
+    "url": "https://github.com/amilnes1/schedugrr/issues"
   },
   "engines": {
     "node": ">=20"
@@ -71,8 +71,8 @@
     "vitest": "^4.1.10"
   },
   "build": {
-    "appId": "org.openagenda.desktop",
-    "productName": "OpenAgenda",
+    "appId": "io.github.amilnes1.schedugrr",
+    "productName": "ScheduGrr",
     "asar": true,
     "directories": {
       "output": "release",
@@ -112,7 +112,7 @@
         }
       ],
       "extendInfo": {
-        "NSCalendarsFullAccessUsageDescription": "OpenAgenda uses calendar access only to keep the tasks you choose synchronized with a calendar on this Mac.",
+        "NSCalendarsFullAccessUsageDescription": "ScheduGrr uses calendar access only to keep the tasks you choose synchronized with a calendar on this Mac.",
         "NSHumanReadableCopyright": "Copyright © 2026 Alec Milnes"
       }
     },
@@ -129,7 +129,7 @@
       ],
       "icon": "build/icon.png",
       "artifactName": "${productName}-${version}-${arch}.${ext}",
-      "legalTrademarks": "OpenAgenda"
+      "legalTrademarks": "ScheduGrr"
     },
     "nsis": {
       "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
@@ -137,11 +137,11 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "OpenAgenda",
+      "shortcutName": "ScheduGrr",
       "deleteAppDataOnUninstall": false
     },
     "dmg": {
-      "title": "OpenAgenda ${version}",
+      "title": "ScheduGrr ${version}",
       "backgroundColor": "#f7f3ea",
       "iconSize": 112,
       "contents": [

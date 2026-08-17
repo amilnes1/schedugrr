@@ -80,7 +80,7 @@ export function CalendarSyncPanel() {
           <div>
             <p className="text-[12px] font-medium text-ink">Put your tasks on Calendar</p>
             <p className="mt-1 text-[11.5px] leading-relaxed text-ink-soft">
-              Choose where scheduled tasks should appear. OpenAgenda updates only the Calendar events it creates.
+              Choose where scheduled tasks should appear. ScheduGrr updates only the Calendar events it creates.
             </p>
           </div>
         </div>

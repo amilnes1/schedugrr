@@ -8,6 +8,7 @@ export type TaskFont = "sans" | "serif";
 export type TaskTextSize = "compact" | "standard" | "large";
 export type TaskTextWeight = "regular" | "medium" | "strong";
 export type SelectionTone = "accent" | "sage" | "sky" | "plum";
+export type RemarkMode = "snark" | "cheer" | "hush";
 
 interface UIState {
   view: ViewMode;
@@ -16,6 +17,7 @@ interface UIState {
   taskTextSize: TaskTextSize;
   taskTextWeight: TaskTextWeight;
   selectionTone: SelectionTone;
+  remarkMode: RemarkMode;
   setView: (v: ViewMode) => void;
   toggleTheme: () => void;
   setTheme: (t: Theme) => void;
@@ -23,6 +25,7 @@ interface UIState {
   setTaskTextSize: (size: TaskTextSize) => void;
   setTaskTextWeight: (weight: TaskTextWeight) => void;
   setSelectionTone: (tone: SelectionTone) => void;
+  setRemarkMode: (mode: RemarkMode) => void;
 }
 
 export const useUI = create<UIState>()(
@@ -38,6 +41,7 @@ export const useUI = create<UIState>()(
       taskTextSize: "standard",
       taskTextWeight: "medium",
       selectionTone: "accent",
+      remarkMode: "snark",
       setView: (view) => set({ view }),
       toggleTheme: () => set((s) => ({ theme: s.theme === "light" ? "dark" : "light" })),
       setTheme: (theme) => set({ theme }),
@@ -45,8 +49,9 @@ export const useUI = create<UIState>()(
       setTaskTextSize: (taskTextSize) => set({ taskTextSize }),
       setTaskTextWeight: (taskTextWeight) => set({ taskTextWeight }),
       setSelectionTone: (selectionTone) => set({ selectionTone }),
+      setRemarkMode: (remarkMode) => set({ remarkMode }),
     }),
-    { name: "openagenda.ui.v1", storage: persistStorage },
+    { name: "schedugrr.ui.v1", storage: persistStorage },
   ),
 );
 

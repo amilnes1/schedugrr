@@ -8,18 +8,19 @@ import { fileURLToPath } from "node:url";
 import { _electron as electron } from "playwright";
 
 const projectRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const universalExecutable = join(projectRoot, "release", "mac-universal", "OpenAgenda.app", "Contents", "MacOS", "OpenAgenda");
-const armExecutable = join(projectRoot, "release", "mac-arm64", "OpenAgenda.app", "Contents", "MacOS", "OpenAgenda");
-const windowsExecutable = join(projectRoot, "release", "win-unpacked", "OpenAgenda.exe");
-const linuxExecutable = join(projectRoot, "release", "linux-unpacked", "openagenda");
+const universalExecutable = join(projectRoot, "release", "mac-universal", "ScheduGrr.app", "Contents", "MacOS", "ScheduGrr");
+const armExecutable = join(projectRoot, "release", "mac-arm64", "ScheduGrr.app", "Contents", "MacOS", "ScheduGrr");
+const windowsExecutable = join(projectRoot, "release", "win-unpacked", "ScheduGrr.exe");
+const linuxExecutable = join(projectRoot, "release", "linux-unpacked", "schedugrr");
 const platformExecutable = process.platform === "win32"
   ? windowsExecutable
   : process.platform === "linux" ? linuxExecutable : existsSync(universalExecutable) ? universalExecutable : armExecutable;
-const executablePath = process.env.OPENAGENDA_QA_EXECUTABLE
-  ? resolve(process.env.OPENAGENDA_QA_EXECUTABLE)
+const requestedExecutable = process.env.SCHEDUGRR_QA_EXECUTABLE ?? process.env.OPENAGENDA_QA_EXECUTABLE;
+const executablePath = requestedExecutable
+  ? resolve(requestedExecutable)
   : platformExecutable;
-const artifactDirectory = join(tmpdir(), "openagenda-desktop-qa");
-const profileDirectory = await mkdtemp(join(tmpdir(), "openagenda-qa-profile-"));
+const artifactDirectory = join(tmpdir(), "schedugrr-desktop-qa");
+const profileDirectory = await mkdtemp(join(tmpdir(), "schedugrr-qa-profile-"));
 
 await mkdir(artifactDirectory, { recursive: true });
 
@@ -45,14 +46,14 @@ async function launch() {
     executablePath,
     env: {
       ...process.env,
-      OPENAGENDA_PORT: String(port),
-      OPENAGENDA_USER_DATA_DIR: profileDirectory,
+      SCHEDUGRR_PORT: String(port),
+      SCHEDUGRR_USER_DATA_DIR: profileDirectory,
     },
   });
   const page = await desktop.firstWindow();
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.waitForLoadState("domcontentloaded");
-  await page.getByText("OpenAgenda", { exact: true }).waitFor();
+  await page.getByText("ScheduGrr", { exact: true }).waitFor();
   return { desktop, page };
 }
 
@@ -81,8 +82,8 @@ try {
   first = await launch();
   const { desktop, page } = first;
 
-  assert.match(await page.title(), /^OpenAgenda\b/);
-  assert.equal((await request("/api/health")).app, "openagenda");
+  assert.match(await page.title(), /^ScheduGrr\b/);
+  assert.equal((await request("/api/health")).app, "schedugrr");
   const calendarStatus = await request("/api/calendar/status");
   assert.equal(calendarStatus.available, process.platform === "darwin", "Native calendar availability should match the host platform");
 
@@ -91,6 +92,7 @@ try {
   await page.getByRole("button", { name: "Board", exact: true }).click();
   await page.getByText("Day schedule", { exact: true }).waitFor();
   await page.getByRole("heading", { name: "Work", exact: true }).waitFor();
+  await page.screenshot({ path: join(artifactDirectory, "01-board.png"), fullPage: true });
 
   await page.getByRole("button", { name: "Rename Work list" }).click();
   const listName = page.getByRole("textbox", { name: "List name for Work" });
@@ -108,6 +110,23 @@ try {
   await page.keyboard.press("Escape");
 
   await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: /Remarks/ }).click();
+  const remarks = page.getByRole("region", { name: "Remarks settings" });
+  assert.equal(await remarks.getByRole("button", { name: "Snark", exact: true }).getAttribute("aria-pressed"), "true");
+  await page.screenshot({ path: join(artifactDirectory, "02-remarks-settings.png"), fullPage: true });
+  await remarks.getByRole("button", { name: "Say something" }).click();
+  await page.getByRole("status", { name: /Completed: A sample task/ }).waitFor();
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: join(artifactDirectory, "03-remarks-snark.png"), fullPage: true });
+  await remarks.getByRole("button", { name: "Cheer", exact: true }).click();
+  await remarks.getByRole("button", { name: "Say something" }).click();
+  await page.getByText("ScheduGrr cheers", { exact: true }).waitFor();
+  await remarks.getByRole("button", { name: "Hush", exact: true }).click();
+  assert.equal(await remarks.getByRole("button", { name: "Quiet means quiet" }).isDisabled(), true);
+  await remarks.getByRole("button", { name: "Cheer", exact: true }).click();
+  await page.keyboard.press("Escape");
+
+  await page.getByRole("button", { name: "More options" }).click();
   await page.getByRole("button", { name: /Calendar sync/ }).click();
   const calendarPanel = page.getByRole("region", { name: "Calendar sync settings" });
   await calendarPanel.waitFor();
@@ -118,7 +137,7 @@ try {
   } else {
     await calendarPanel.getByRole("button", { name: "Connect Calendar" }).waitFor();
   }
-  await page.screenshot({ path: join(artifactDirectory, "02-calendar-sync.png"), fullPage: true });
+  await page.screenshot({ path: join(artifactDirectory, "04-calendar-sync.png"), fullPage: true });
   await page.keyboard.press("Escape");
 
   const { list } = await request("/api/lists", {
@@ -146,8 +165,27 @@ try {
   assert.equal(await detail.getByRole("button", { name: "Open time picker" }).locator("svg").count(), 1);
   assert.equal(await detail.getByLabel("Task date").inputValue(), "2026-08-20");
   await detail.getByLabel("Task time").fill("14:15");
-  await page.screenshot({ path: join(artifactDirectory, "03-task-time-editor.png"), fullPage: true });
+  await page.screenshot({ path: join(artifactDirectory, "05-task-time-editor.png"), fullPage: true });
   await detail.getByRole("button", { name: "Close" }).click();
+
+  const qaCard = qaTask.locator("xpath=../..");
+  await qaCard.getByRole("checkbox").click();
+  await page.getByText("ScheduGrr cheers", { exact: true }).waitFor();
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: join(artifactDirectory, "06-completion-cheer.png"), fullPage: true });
+
+  const { task: llmTask } = await request("/api/tasks", {
+    method: "POST",
+    body: JSON.stringify({ title: "QA LLM completion", listId: list.id }),
+  });
+  await page.getByText("QA LLM completion", { exact: true }).waitFor({ timeout: 8_000 });
+  await request(`/api/tasks/${llmTask.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ completed: true }),
+  });
+  await page.getByRole("status", { name: /Completed: QA LLM completion/ }).waitFor({ timeout: 8_000 });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: join(artifactDirectory, "07-llm-completion.png"), fullPage: true });
 
   await waitFor(async () => {
     const context = await request("/api/context");
@@ -164,7 +202,7 @@ try {
   }));
   assert.ok(viewport.innerWidth >= 980 && viewport.innerHeight >= 660);
   assert.ok(viewport.bodyWidth <= viewport.innerWidth && viewport.bodyHeight <= viewport.innerHeight);
-  await page.screenshot({ path: join(artifactDirectory, "04-minimum-window.png"), fullPage: true });
+  await page.screenshot({ path: join(artifactDirectory, "08-minimum-window.png"), fullPage: true });
 
   await desktop.close();
   first = null;
@@ -183,10 +221,16 @@ try {
   assert.equal(await persistedAppearance.getByRole("button", { name: "Sky text selection" }).getAttribute("aria-pressed"), "true");
   await second.page.keyboard.press("Escape");
 
+  await second.page.getByRole("button", { name: "More options" }).click();
+  await second.page.getByRole("button", { name: /Remarks/ }).click();
+  const persistedRemarks = second.page.getByRole("region", { name: "Remarks settings" });
+  assert.equal(await persistedRemarks.getByRole("button", { name: "Cheer", exact: true }).getAttribute("aria-pressed"), "true");
+  await second.page.keyboard.press("Escape");
+
   const persisted = await request("/api/context");
   assert.ok(persisted.lists.some((candidate) => candidate.name === "Workroom"));
   assert.ok(persisted.lists.some((candidate) => candidate.tasks.some((task) => task.title === "QA timed task" && task.time === "14:15")));
-  await second.page.screenshot({ path: join(artifactDirectory, "05-persisted-relaunch.png"), fullPage: true });
+  await second.page.screenshot({ path: join(artifactDirectory, "09-persisted-relaunch.png"), fullPage: true });
 
   assert.deepEqual(pageErrors, []);
   console.log(`Desktop QA passed. Screenshots: ${artifactDirectory}`);

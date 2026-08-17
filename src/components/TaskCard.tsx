@@ -10,7 +10,7 @@ import { PriorityMark } from "./PriorityMark";
 interface TaskCardProps {
   task: Task;
   color: ColorKey;
-  onToggle: () => void;
+  onToggle: (anchor: { x: number; y: number }) => void;
   onOpen: () => void;
   /** Show the scheduled-date badge (used on the Board, hidden on the Calendar). */
   showDate?: boolean;

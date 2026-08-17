@@ -7,6 +7,7 @@ import type { List, Task } from "@/lib/types";
 import { toKey, isTodayKey } from "@/lib/date";
 import { cn } from "@/lib/cn";
 import { DraggableChip } from "./Chip";
+import { toggleTaskWithRemark } from "@/lib/remarks";
 
 export function DayCell({
   date,
@@ -25,7 +26,7 @@ export function DayCell({
 }) {
   const key = toKey(date);
   const { setNodeRef, isOver } = useDroppable({ id: `day:${key}`, data: { type: "day", date: key } });
-  const { addTask, toggleTask } = useBoard();
+  const { addTask } = useBoard();
   const [composing, setComposing] = useState(false);
   const [value, setValue] = useState("");
 
@@ -77,7 +78,7 @@ export function DayCell({
             key={task.id}
             task={task}
             color={listsById[task.listId]?.color ?? "ink"}
-            onToggle={() => toggleTask(task.id)}
+            onToggle={(anchor) => toggleTaskWithRemark(task.id, anchor)}
             onOpen={() => onOpenTask(task.id)}
           />
         ))}

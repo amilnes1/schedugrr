@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
 export default async function afterPack(context) {
-  if (context.electronPlatformName !== "darwin" || process.env.OPENAGENDA_ADHOC_SIGN !== "1") return;
+  if (context.electronPlatformName !== "darwin" || process.env.SCHEDUGRR_ADHOC_SIGN !== "1") return;
   // Universal packaging first creates architecture-specific temporary apps.
   // Signing those changes CodeResources and prevents @electron/universal from
   // comparing and merging the two bundles. Sign only the combined output.

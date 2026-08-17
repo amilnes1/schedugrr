@@ -7,11 +7,11 @@ import { colorVars } from "@/lib/colors";
 import { cn } from "@/lib/cn";
 import { Checkbox } from "@/components/Checkbox";
 import { PriorityMark } from "@/components/PriorityMark";
+import { toggleTaskWithRemark } from "@/lib/remarks";
 
 export function DayScheduleRail({ onOpenTask }: { onOpenTask: (id: string) => void }) {
   const lists = useBoard((state) => state.lists);
   const tasks = useBoard((state) => state.tasks);
-  const toggleTask = useBoard((state) => state.toggleTask);
   const [date, setDate] = useState(todayKey);
 
   const scheduled = useMemo(() => selectTasksForDay({ tasks }, date), [date, tasks]);
@@ -100,7 +100,7 @@ export function DayScheduleRail({ onOpenTask }: { onOpenTask: (id: string) => vo
                   <div className="pt-px">
                     <Checkbox
                       checked={task.completed}
-                      onChange={() => toggleTask(task.id)}
+                      onChange={(anchor) => toggleTaskWithRemark(task.id, anchor)}
                       color={color.solid}
                       className="h-[17px] w-[17px] rounded-[5px]"
                     />

@@ -1,5 +1,5 @@
 /**
- * OpenAgenda core domain types.
+ * ScheduGrr core domain types.
  *
  * The data model is intentionally small and normalized so that it can be
  * manipulated equally well by a human dragging cards around or by a future

@@ -1,14 +1,14 @@
 import { app, BrowserWindow, Menu, dialog, session, shell } from "electron";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BoardStore } from "../server/board-store.mjs";
-import { createOpenAgendaServer } from "../server/app.mjs";
+import { createScheduGrrServer } from "../server/app.mjs";
 import { CalendarSyncManager } from "./calendar-sync.mjs";
 import { loadNativeCalendarBridge } from "./native-calendar.mjs";
 
 const HOST = "127.0.0.1";
-const requestedPort = Number.parseInt(process.env.OPENAGENDA_PORT ?? "8787", 10);
+const requestedPort = Number.parseInt(process.env.SCHEDUGRR_PORT ?? process.env.OPENAGENDA_PORT ?? "8787", 10);
 const PORT = Number.isInteger(requestedPort) && requestedPort > 0 && requestedPort <= 65535 ? requestedPort : 8787;
 const APP_ORIGIN = `http://${HOST}:${PORT}`;
 const DEFAULT_BOUNDS = { width: 1440, height: 900 };
@@ -19,9 +19,10 @@ let localServer = null;
 let calendarSync = null;
 let quitting = false;
 
-app.setName("OpenAgenda");
-if (process.env.OPENAGENDA_USER_DATA_DIR) {
-  app.setPath("userData", resolve(process.env.OPENAGENDA_USER_DATA_DIR));
+app.setName("ScheduGrr");
+const requestedUserData = process.env.SCHEDUGRR_USER_DATA_DIR ?? process.env.OPENAGENDA_USER_DATA_DIR;
+if (requestedUserData) {
+  app.setPath("userData", resolve(requestedUserData));
 }
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
@@ -52,7 +53,7 @@ function saveWindowState() {
   try {
     writeFileSync(statePath(), `${JSON.stringify(mainWindow.getBounds(), null, 2)}\n`, "utf8");
   } catch (error) {
-    console.warn("Could not save OpenAgenda window state", error);
+    console.warn("Could not save ScheduGrr window state", error);
   }
 }
 
@@ -107,24 +108,39 @@ function installApplicationMenu() {
 
 function migrateLegacyUserData() {
   const currentDirectory = app.getPath("userData");
-  const legacyDirectory = join(app.getPath("appData"), "OpenBoard");
+  const openAgendaDirectory = join(app.getPath("appData"), "OpenAgenda");
+  const openBoardDirectory = join(app.getPath("appData"), "OpenBoard");
   mkdirSync(currentDirectory, { recursive: true });
   const migrations = [
-    [join(legacyDirectory, "openboard.json"), join(currentDirectory, "openagenda.json")],
-    [join(currentDirectory, "openboard.json"), join(currentDirectory, "openagenda.json")],
-    [join(legacyDirectory, "window-state.json"), join(currentDirectory, "window-state.json")],
+    [join(openAgendaDirectory, "openagenda.json"), join(currentDirectory, "schedugrr.json")],
+    [join(openAgendaDirectory, "openboard.json"), join(currentDirectory, "schedugrr.json")],
+    [join(openBoardDirectory, "openboard.json"), join(currentDirectory, "schedugrr.json")],
+    [join(currentDirectory, "openagenda.json"), join(currentDirectory, "schedugrr.json")],
+    [join(currentDirectory, "openboard.json"), join(currentDirectory, "schedugrr.json")],
+    [join(openAgendaDirectory, "window-state.json"), join(currentDirectory, "window-state.json")],
+    [join(openBoardDirectory, "window-state.json"), join(currentDirectory, "window-state.json")],
+    [join(openAgendaDirectory, "calendar-settings.json"), join(currentDirectory, "calendar-settings.json")],
+    [join(openAgendaDirectory, "calendar-mappings.json"), join(currentDirectory, "calendar-mappings.json")],
   ];
   for (const [source, destination] of migrations) {
     if (source !== destination && existsSync(source) && !existsSync(destination)) {
       copyFileSync(source, destination);
-      console.log(`Migrated OpenBoard data to ${destination}`);
+      console.log(`Migrated legacy planner data to ${destination}`);
+    }
+  }
+  for (const profileFolder of ["Local Storage"]) {
+    const source = join(openAgendaDirectory, profileFolder);
+    const destination = join(currentDirectory, profileFolder);
+    if (source !== destination && existsSync(source) && !existsSync(destination)) {
+      cpSync(source, destination, { recursive: true });
+      console.log(`Migrated OpenAgenda ${profileFolder} preferences`);
     }
   }
 }
 
 async function startLocalServer() {
   const userData = app.getPath("userData");
-  const dataFile = join(userData, "openagenda.json");
+  const dataFile = join(userData, "schedugrr.json");
   const store = new BoardStore(dataFile);
   await store.ready;
   const bridge = loadNativeCalendarBridge({
@@ -139,7 +155,7 @@ async function startLocalServer() {
     mappingsPath: join(userData, "calendar-mappings.json"),
   });
   await calendarSync.ready;
-  localServer = createOpenAgendaServer(store, { calendar: calendarSync });
+  localServer = createScheduGrrServer(store, { calendar: calendarSync });
   await new Promise((resolve, reject) => {
     localServer.once("error", reject);
     localServer.listen(PORT, HOST, () => {
@@ -147,7 +163,7 @@ async function startLocalServer() {
       resolve();
     });
   });
-  console.log(`OpenAgenda desktop API ready at ${APP_ORIGIN}`);
+  console.log(`ScheduGrr desktop API ready at ${APP_ORIGIN}`);
   console.log(`Board data: ${dataFile}`);
 }
 
@@ -159,7 +175,7 @@ function createWindow() {
     minHeight: 660,
     show: false,
     backgroundColor: "#f7f3ea",
-    title: "OpenAgenda",
+    title: "ScheduGrr",
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
     trafficLightPosition: process.platform === "darwin" ? { x: 18, y: 19 } : undefined,
     webPreferences: {
@@ -191,7 +207,7 @@ function createWindow() {
 app.whenReady().then(async () => {
   migrateLegacyUserData();
   app.setAboutPanelOptions({
-    applicationName: "OpenAgenda",
+    applicationName: "ScheduGrr",
     applicationVersion: app.getVersion(),
     copyright: "Copyright © 2026 Alec Milnes",
     credits: "Created and maintained by Alec Milnes. Open source under the MIT License.",
@@ -204,9 +220,9 @@ app.whenReady().then(async () => {
     createWindow();
   } catch (error) {
     const detail = error?.code === "EADDRINUSE"
-      ? `Another process is already using ${APP_ORIGIN}. Quit it, then reopen OpenAgenda.`
+      ? `Another process is already using ${APP_ORIGIN}. Quit it, then reopen ScheduGrr.`
       : error instanceof Error ? error.message : String(error);
-    dialog.showErrorBox("OpenAgenda could not start", detail);
+    dialog.showErrorBox("ScheduGrr could not start", detail);
     app.quit();
   }
 });

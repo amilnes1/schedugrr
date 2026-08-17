@@ -4,19 +4,19 @@ Official application: <https://openai.com/form/codex-for-oss/>
 
 The current program is aimed at primary or core maintainers of active public
 open-source projects, with review signals that include meaningful usage,
-ecosystem importance, and evidence of ongoing maintenance. Because OpenAgenda
+ecosystem importance, and evidence of ongoing maintenance. Because ScheduGrr
 is new, the strongest application will follow a public tagged release and use
 only real adoption evidence—never projected stars, downloads, or contributors.
 
 ## Project
 
-**OpenAgenda** is a local-first, privacy-respecting desktop task board and
+**ScheduGrr** is a local-first, privacy-respecting desktop task board and
 calendar. It combines visual lists, time-aware daily planning, native calendar
 synchronization, and a documented loopback API that lets LLM tools inspect and
 update the same tasks a person sees. It requires no hosted account or project
 server, and it keeps personal planning data on the user's computer.
 
-Repository: `https://github.com/amilnes1/openagenda`
+Repository: `https://github.com/amilnes1/schedugrr`
 
 ## Maintainer
 
@@ -28,7 +28,7 @@ tests, and accepts the work.
 ## Why it matters
 
 Most task applications either require a hosted account or expose data through
-provider-specific integrations. OpenAgenda explores a smaller open-source
+provider-specific integrations. ScheduGrr explores a smaller open-source
 surface: one portable local data model, a native human interface, and an API
 that local agents can use without screen scraping or sharing personal tasks
 with another service. The same approach can serve as a reference for other
@@ -48,7 +48,7 @@ local-first, agent-friendly desktop applications.
 
 **Why does this repository qualify?** (500-character limit)
 
-> OpenAgenda is an MIT-licensed, local-first desktop planner with a documented
+> ScheduGrr is an MIT-licensed, local-first desktop planner with a documented
 > loopback API that lets local AI tools inspect and update the same tasks a
 > person sees. It offers a reusable privacy-preserving pattern for
 > agent-friendly desktop software: no hosted account, a portable data model,
@@ -57,7 +57,7 @@ local-first, agent-friendly desktop applications.
 
 **Why does your project need Codex Security?** (500-character limit)
 
-> OpenAgenda exposes a loopback API that can change personal planning data and
+> ScheduGrr exposes a loopback API that can change personal planning data and
 > packages a sandboxed Electron renderer alongside native calendar integration.
 > Codex Security would help review authentication and origin boundaries, IPC
 > and native bridge safety, dependency risk, path and import validation, and
@@ -75,7 +75,7 @@ local-first, agent-friendly desktop applications.
 
 **Anything else we should know?** (500-character limit)
 
-> OpenAgenda was built with AI-assisted development under human review and is
+> ScheduGrr was built with AI-assisted development under human review and is
 > maintained by me as creator and release owner. The repository includes an MIT
 > license, contributing guide, security policy, roadmap, OpenAPI contract,
 > citation metadata, cross-platform CI, and a checksummed Windows prerelease.

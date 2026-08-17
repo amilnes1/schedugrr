@@ -1,6 +1,6 @@
 # Desktop distribution
 
-OpenAgenda packages the existing React UI and dependency-free Node API inside an
+ScheduGrr packages the existing React UI and dependency-free Node API inside an
 Electron application. There is no hosted backend: each desktop install runs the
 API on `127.0.0.1:8787` and keeps board data in the current user's application-
 data directory.
@@ -18,15 +18,15 @@ npm run desktop:dist
 
 On macOS this produces:
 
-- `release/OpenAgenda-<version>-<arch>.dmg`
-- `release/OpenAgenda-<version>-<arch>-mac.zip`
-- `release/mac-<arch>/OpenAgenda.app`
+- `release/ScheduGrr-<version>-<arch>.dmg`
+- `release/ScheduGrr-<version>-<arch>-mac.zip`
+- `release/mac-<arch>/ScheduGrr.app`
 
 On Windows, `npm run desktop:dist:win` produces:
 
-- `release/OpenAgenda-<version>-x64-setup.exe`
-- `release/OpenAgenda-<version>-x64.zip`
-- `release/win-unpacked/OpenAgenda.exe`
+- `release/ScheduGrr-<version>-x64-setup.exe`
+- `release/ScheduGrr-<version>-x64.zip`
+- `release/win-unpacked/ScheduGrr.exe`
 
 On macOS, with no explicit signing credentials, the packaging script creates a
 valid ad-hoc signature for local QA. Ad-hoc builds are not suitable for a public
@@ -73,10 +73,10 @@ After building, verify the public artifact rather than relying on a successful
 exit code alone:
 
 ```bash
-codesign --verify --deep --strict --verbose=2 release/mac-universal/OpenAgenda.app
-spctl --assess --verbose --type exec release/mac-universal/OpenAgenda.app
-xcrun stapler validate release/mac-universal/OpenAgenda.app
-hdiutil verify release/OpenAgenda-<version>-universal.dmg
+codesign --verify --deep --strict --verbose=2 release/mac-universal/ScheduGrr.app
+spctl --assess --verbose --type exec release/mac-universal/ScheduGrr.app
+xcrun stapler validate release/mac-universal/ScheduGrr.app
+hdiutil verify release/ScheduGrr-<version>-universal.dmg
 ```
 
 The Gatekeeper assessment should report `accepted` with a notarized Developer
@@ -105,7 +105,7 @@ certificate is the traditional alternative.
   compiled before packaging and included as a signed native resource.
 - The renderer has no Node access. Native responsibilities remain in
   `desktop/main.mjs` and the local API modules under `server/`.
-- The desktop app requires exclusive use of port `8787`. A second OpenAgenda
+- The desktop app requires exclusive use of port `8787`. A second ScheduGrr
   launch focuses the existing instance; a different process on that port shows
   a clear startup error.
 - Release artifacts are intentionally ignored by Git. Publish them through the

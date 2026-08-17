@@ -1,13 +1,13 @@
 # Windows support
 
-OpenAgenda's Electron shell, React interface, task model, local JSON storage,
+ScheduGrr's Electron shell, React interface, task model, local JSON storage,
 and loopback API are cross-platform. The Windows release supports the Board,
 in-app Calendar, day schedule, timed tasks, priorities and manual ordering,
 appearance settings, JSON import/export, and LLM-friendly API.
 
 The one current platform difference is native account-calendar sync. Version
-0.2 uses Apple EventKit and therefore exposes that connection only on macOS.
-The Windows app continues to schedule tasks inside OpenAgenda normally and
+0.3 uses Apple EventKit and therefore exposes that connection only on macOS.
+The Windows app continues to schedule tasks inside ScheduGrr normally and
 shows the Calendar-sync control as unavailable. Outlook and Google integration
 are roadmap items requiring provider OAuth, token storage, and conflict rules;
 they are not packaging toggles.
@@ -24,13 +24,13 @@ npm run desktop:dist:win
 
 The release directory receives:
 
-- `OpenAgenda-<version>-x64-setup.exe` — per-user NSIS installer
-- `OpenAgenda-<version>-x64.zip` — unpacked application archive
+- `ScheduGrr-<version>-x64-setup.exe` — per-user NSIS installer
+- `ScheduGrr-<version>-x64.zip` — unpacked application archive
 
 The installer offers a destination choice, creates Start-menu and desktop
-shortcuts, and deliberately preserves board data during uninstall. OpenAgenda
+shortcuts, and deliberately preserves board data during uninstall. ScheduGrr
 uses Electron's per-user application-data directory, normally beneath
-`%APPDATA%\OpenAgenda`.
+`%APPDATA%\ScheduGrr`.
 
 For packaged UI QA on a Windows machine:
 

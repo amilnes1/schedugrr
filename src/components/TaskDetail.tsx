@@ -8,6 +8,7 @@ import { colorVars } from "@/lib/colors";
 import { toKey, relativeLabel, format } from "@/lib/date";
 import { cn } from "@/lib/cn";
 import { Checkbox } from "./Checkbox";
+import { toggleTaskWithRemark } from "@/lib/remarks";
 
 const PRIORITIES: { key: Priority; label: string }[] = [
   { key: "none", label: "None" },
@@ -29,7 +30,7 @@ function TaskDetailPanel({ taskId, onClose }: { taskId: string; onClose: () => v
   const timeInputRef = useRef<HTMLInputElement>(null);
   const task = useBoard((s) => s.tasks[taskId]);
   const lists = useBoard((s) => s.lists);
-  const { updateTask, toggleTask, removeTask, moveTaskToList, moveTaskToDay, unscheduleTask } =
+  const { updateTask, removeTask, moveTaskToList, moveTaskToDay, unscheduleTask } =
     useBoard();
 
   useEffect(() => {
@@ -96,7 +97,7 @@ function TaskDetailPanel({ taskId, onClose }: { taskId: string; onClose: () => v
           {/* Title + complete */}
           <div className="flex items-start gap-3">
             <div className="pt-1">
-              <Checkbox checked={task.completed} onChange={() => toggleTask(task.id)} color={c.solid} />
+              <Checkbox checked={task.completed} onChange={(anchor) => toggleTaskWithRemark(task.id, anchor)} color={c.solid} />
             </div>
             <textarea
               value={task.title}

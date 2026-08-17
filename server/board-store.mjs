@@ -13,7 +13,7 @@ const makeId = (prefix) => `${prefix}_${randomUUID().replaceAll("-", "").slice(0
 
 export function emptyBoardFile() {
   return {
-    app: "openagenda",
+    app: "schedugrr",
     version: 1,
     initialized: false,
     revision: 0,
@@ -192,7 +192,7 @@ export class BoardStore {
       this.document = {
         ...emptyBoardFile(),
         ...parsed,
-        app: "openagenda",
+        app: "schedugrr",
         initialized: parsed.initialized !== false,
         lists,
         tasks,
@@ -213,7 +213,7 @@ export class BoardStore {
     const operation = this.queue.then(async () => {
       const draft = clone(this.document);
       const value = mutator(draft);
-      draft.app = "openagenda";
+      draft.app = "schedugrr";
       draft.version = 1;
       draft.initialized = true;
       draft.revision = this.document.revision + 1;
@@ -223,7 +223,7 @@ export class BoardStore {
         try {
           listener(clone(draft));
         } catch (error) {
-          console.warn("OpenAgenda store listener failed", error);
+          console.warn("ScheduGrr store listener failed", error);
         }
       }
       return { value: clone(value), document: clone(draft) };

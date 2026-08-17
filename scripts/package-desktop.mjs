@@ -10,7 +10,7 @@ const targetsWindows = args.some((argument) => ["--win", "--windows", "-w"].incl
 // avoids silently selecting stale identities from a developer's keychain.
 if (process.platform === "darwin" && !targetsWindows && !env.CSC_LINK && !env.CSC_NAME) {
   env.CSC_IDENTITY_AUTO_DISCOVERY = "false";
-  env.OPENAGENDA_ADHOC_SIGN = "1";
+  env.SCHEDUGRR_ADHOC_SIGN = "1";
   console.log("Creating an ad-hoc signed local build. Set CSC_NAME or CSC_LINK for a public release.");
 }
 

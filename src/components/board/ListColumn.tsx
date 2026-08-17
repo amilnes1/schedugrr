@@ -9,6 +9,7 @@ import { cn } from "@/lib/cn";
 import { TaskComposer } from "@/components/TaskComposer";
 import { Popover, MenuItem } from "@/components/ui/Popover";
 import { SortableTaskCard } from "./SortableTaskCard";
+import { toggleTaskWithRemark } from "@/lib/remarks";
 
 export function ListColumn({
   list,
@@ -25,7 +26,7 @@ export function ListColumn({
   onMove: (dir: -1 | 1) => void;
   onOpenTask: (id: string) => void;
 }) {
-  const { addTask, toggleTask, renameList, setListColor, setListTaskOrder, removeList } = useBoard();
+  const { addTask, renameList, setListColor, setListTaskOrder, removeList } = useBoard();
   const { setNodeRef, isOver } = useDroppable({ id: `list:${list.id}`, data: { type: "list", listId: list.id } });
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(list.name);
@@ -175,7 +176,7 @@ export function ListColumn({
               key={task.id}
               task={task}
               color={list.color}
-              onToggle={() => toggleTask(task.id)}
+              onToggle={(anchor) => toggleTaskWithRemark(task.id, anchor)}
               onOpen={() => onOpenTask(task.id)}
             />
           ))}

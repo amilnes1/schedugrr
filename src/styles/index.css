@@ -9,7 +9,7 @@
 }
 
 /* ============================================================
-   OpenAgenda — "Paper & Ink" design system
+   ScheduGrr — "Paper & Ink" design system
    Warm paper surfaces, deep warm ink, a single vermilion accent.
    ============================================================ */
 
@@ -146,6 +146,14 @@
   --color-gold: var(--gold);
   --color-sky: var(--sky);
   --color-plum: var(--plum);
+}
+
+.completion-chit {
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(104deg, transparent 0 45%, color-mix(in srgb, var(--gold) 10%, transparent) 46% 54%, transparent 55%),
+    var(--paper-raised);
+  clip-path: polygon(0 3px, 6px 0, 13px 3px, 21px 0, 29px 3px, 38px 0, 48px 3px, 58px 0, 69px 3px, 80px 0, 91px 3px, 103px 0, 116px 3px, 130px 0, 145px 3px, 161px 0, 178px 3px, 196px 0, 215px 3px, 235px 0, 256px 3px, 278px 0, 301px 3px, 100% 0, 100% calc(100% - 3px), calc(100% - 8px) 100%, calc(100% - 17px) calc(100% - 3px), calc(100% - 27px) 100%, calc(100% - 38px) calc(100% - 3px), calc(100% - 50px) 100%, calc(100% - 63px) calc(100% - 3px), calc(100% - 77px) 100%, calc(100% - 92px) calc(100% - 3px), calc(100% - 108px) 100%, calc(100% - 125px) calc(100% - 3px), calc(100% - 143px) 100%, calc(100% - 162px) calc(100% - 3px), calc(100% - 182px) 100%, calc(100% - 203px) calc(100% - 3px), calc(100% - 225px) 100%, calc(100% - 248px) calc(100% - 3px), calc(100% - 272px) 100%, calc(100% - 297px) calc(100% - 3px), 0 100%);
 }
 
 @layer base {

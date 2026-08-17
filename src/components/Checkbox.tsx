@@ -9,7 +9,7 @@ export function Checkbox({
   className,
 }: {
   checked: boolean;
-  onChange: () => void;
+  onChange: (anchor: { x: number; y: number }) => void;
   color?: string;
   className?: string;
 }) {
@@ -20,7 +20,8 @@ export function Checkbox({
       aria-checked={checked}
       onClick={(e) => {
         e.stopPropagation();
-        onChange();
+        const bounds = e.currentTarget.getBoundingClientRect();
+        onChange({ x: bounds.left + bounds.width / 2, y: bounds.top });
       }}
       className={cn(
         "ring-focus grid h-[19px] w-[19px] shrink-0 place-items-center rounded-[6px] border transition-colors",

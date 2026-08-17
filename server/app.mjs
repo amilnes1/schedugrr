@@ -100,7 +100,7 @@ async function apiRoute(req, res, url, store, { calendar = null } = {}) {
     const board = await store.read();
     return json(res, 200, {
       ok: true,
-      app: "openagenda",
+      app: "schedugrr",
       version: 1,
       initialized: board.initialized,
       revision: board.revision,
@@ -217,7 +217,7 @@ async function apiRoute(req, res, url, store, { calendar = null } = {}) {
         .sort(listTaskSort(list)),
     }));
     return json(res, 200, {
-      app: "openagenda",
+      app: "schedugrr",
       revision: board.revision,
       instruction: "Use task and list ids for precise edits. Dates use yyyy-MM-dd and optional local times use HH:mm. See /openapi.json for every operation.",
       lists,
@@ -262,7 +262,7 @@ async function staticRoute(req, res, url) {
   }
 }
 
-export function createOpenAgendaServer(store, services = {}) {
+export function createScheduGrrServer(store, services = {}) {
   return createServer(async (req, res) => {
     setCors(req, res);
     if (req.method === "OPTIONS") {
@@ -270,7 +270,7 @@ export function createOpenAgendaServer(store, services = {}) {
       return res.end();
     }
     try {
-      const url = new URL(req.url ?? "/", "http://openagenda.local");
+      const url = new URL(req.url ?? "/", "http://schedugrr.local");
       if (url.pathname.startsWith("/api/")) {
         if (!isAllowedOrigin(req.headers.origin)) {
           throw new ApiError(403, "Browser requests are accepted only from localhost origins");
@@ -287,4 +287,5 @@ export function createOpenAgendaServer(store, services = {}) {
 }
 
 // Kept as a source-compatible alias for scripts written against the pre-rename API.
-export const createOpenBoardServer = createOpenAgendaServer;
+export const createOpenAgendaServer = createScheduGrrServer;
+export const createOpenBoardServer = createScheduGrrServer;

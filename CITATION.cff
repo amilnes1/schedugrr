@@ -1,15 +1,15 @@
 cff-version: 1.2.0
-message: "If you use OpenAgenda, please cite the software and its creator."
-title: "OpenAgenda"
+message: "If you use ScheduGrr, please cite the software and its creator."
+title: "ScheduGrr"
 abstract: "A local-first desktop task board and calendar with an LLM-friendly loopback API."
 type: software
 authors:
   - family-names: Milnes
     given-names: Alec
-version: 0.2.0
+version: 0.3.0
 date-released: 2026-08-17
 license: MIT
-repository-code: "https://github.com/amilnes1/openagenda"
+repository-code: "https://github.com/amilnes1/schedugrr"
 keywords:
   - task-management
   - calendar
