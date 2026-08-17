@@ -7,7 +7,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   package:
@@ -41,3 +41,38 @@ jobs:
             release/OpenAgenda-*.zip
             release/SHA256SUMS-windows.txt
           if-no-files-found: error
+      - name: Publish unsigned Windows prerelease
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          @'
+          OpenAgenda 0.2.0 is the first public desktop preview.
+
+          Windows x64 downloads:
+
+          - `OpenAgenda-0.2.0-x64-setup.exe` — interactive installer
+          - `OpenAgenda-0.2.0-x64.zip` — portable archive
+          - `SHA256SUMS-windows.txt` — download checksums
+
+          This preview has passed OpenAgenda's unit, API, and packaged Electron
+          tests on a GitHub-hosted Windows runner. The binaries are not yet
+          Authenticode-signed, so Windows may display an Unknown Publisher or
+          Microsoft Defender SmartScreen warning. Review the source and checksum
+          before installing.
+
+          See `CHANGELOG.md` for the complete release notes.
+          '@ | Set-Content release/RELEASE_NOTES.md
+
+          $releaseFiles = @(
+            (Get-ChildItem release/OpenAgenda-*-setup.exe).FullName
+            (Get-ChildItem release/OpenAgenda-*.zip).FullName
+            (Get-Item release/SHA256SUMS-windows.txt).FullName
+          )
+
+          gh release create "${{ github.ref_name }}" $releaseFiles `
+            --verify-tag `
+            --prerelease `
+            --title "OpenAgenda ${{ github.ref_name }}" `
+            --notes-file release/RELEASE_NOTES.md
