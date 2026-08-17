@@ -1,0 +1,43 @@
+name: Windows package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run desktop:dist:win
+        env:
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+      - name: Test packaged Windows app
+        run: npm run test:desktop
+      - name: Write SHA-256 checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem release\OpenAgenda-*.exe, release\OpenAgenda-*.zip |
+            Get-FileHash -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)" } |
+            Set-Content release\SHA256SUMS-windows.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OpenAgenda-Windows-${{ github.ref_name }}
+          path: |
+            release/OpenAgenda-*-setup.exe
+            release/OpenAgenda-*.zip
+            release/SHA256SUMS-windows.txt
+          if-no-files-found: error

@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use OpenAgenda, please cite the software and its creator."
+title: "OpenAgenda"
+abstract: "A local-first desktop task board and calendar with an LLM-friendly loopback API."
+type: software
+authors:
+  - family-names: Milnes
+    given-names: Alec
+version: 0.2.0
+date-released: 2026-08-17
+license: MIT
+repository-code: "https://github.com/amilnes1/openagenda"
+keywords:
+  - task-management
+  - calendar
+  - local-first
+  - electron
+  - llm-tools

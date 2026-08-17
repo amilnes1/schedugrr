@@ -1,0 +1,314 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAgenda Local API",
+    "version": "1.0.0",
+    "description": "A loopback-only JSON API for reading and editing the same lists and tasks shown in OpenAgenda. Dates use yyyy-MM-dd and optional local times use HH:mm. The macOS desktop app also exposes opt-in native calendar synchronization."
+  },
+  "servers": [
+    { "url": "http://127.0.0.1:8787", "description": "Default local server" }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "checkOpenAgenda",
+        "summary": "Check the local server and current revision",
+        "responses": { "200": { "description": "Server status" } }
+      }
+    },
+    "/api/context": {
+      "get": {
+        "operationId": "getBoardContext",
+        "summary": "Read the whole board grouped into lists for an LLM",
+        "responses": { "200": { "description": "LLM-friendly board context" } }
+      }
+    },
+    "/api/board": {
+      "get": {
+        "operationId": "getBoard",
+        "summary": "Read the normalized board document",
+        "responses": {
+          "200": {
+            "description": "Board document",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Board" } } }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceBoard",
+        "summary": "Replace all lists and tasks",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BoardInput" } } }
+        },
+        "responses": { "200": { "description": "Updated board" }, "400": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/calendar/status": {
+      "get": {
+        "operationId": "getCalendarSyncStatus",
+        "summary": "Read native calendar availability, authorization, and sync settings",
+        "responses": { "200": { "description": "Calendar sync status" } }
+      }
+    },
+    "/api/calendar/access": {
+      "post": {
+        "operationId": "requestCalendarAccess",
+        "summary": "Ask macOS for calendar permission",
+        "responses": { "200": { "description": "Authorization result" }, "501": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/calendar/calendars": {
+      "get": {
+        "operationId": "listWritableCalendars",
+        "summary": "List writable calendars visible through macOS EventKit",
+        "responses": { "200": { "description": "Writable calendars" } }
+      }
+    },
+    "/api/calendar/settings": {
+      "put": {
+        "operationId": "updateCalendarSyncSettings",
+        "summary": "Choose a calendar and configure one-way task synchronization",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarSettings" } } }
+        },
+        "responses": { "200": { "description": "Updated calendar status" }, "400": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/calendar/sync": {
+      "post": {
+        "operationId": "syncCalendarNow",
+        "summary": "Synchronize eligible scheduled tasks to the selected native calendar now",
+        "responses": { "200": { "description": "Sync summary and current status" }, "409": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/lists": {
+      "get": {
+        "operationId": "listLists",
+        "summary": "List to-do lists in display order",
+        "responses": { "200": { "description": "Lists" } }
+      },
+      "post": {
+        "operationId": "createList",
+        "summary": "Create a to-do list",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewList" } } }
+        },
+        "responses": { "201": { "description": "Created list" }, "400": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/lists/{listId}": {
+      "parameters": [
+        { "name": "listId", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "patch": {
+        "operationId": "updateList",
+        "summary": "Rename or recolor a list",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateList" } } }
+        },
+        "responses": { "200": { "description": "Updated list" }, "404": { "$ref": "#/components/responses/Error" } }
+      },
+      "delete": {
+        "operationId": "deleteList",
+        "summary": "Delete a list and all tasks in it",
+        "responses": { "200": { "description": "Deletion confirmation" }, "404": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "operationId": "listTasks",
+        "summary": "Search and filter tasks",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Search title and notes" },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["open", "completed", "all"] } },
+          { "name": "date", "in": "query", "schema": { "type": "string" }, "description": "yyyy-MM-dd or unscheduled" },
+          { "name": "listId", "in": "query", "schema": { "type": "string" } },
+          { "name": "listName", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Matching tasks" } }
+      },
+      "post": {
+        "operationId": "createTask",
+        "summary": "Create a task; listName can be used instead of an id",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewTask" } } }
+        },
+        "responses": { "201": { "description": "Created task" }, "400": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/tasks/{taskId}": {
+      "parameters": [
+        { "name": "taskId", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "patch": {
+        "operationId": "updateTask",
+        "summary": "Edit, complete, schedule, or move a task",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateTask" } } }
+        },
+        "responses": { "200": { "description": "Updated task" }, "404": { "$ref": "#/components/responses/Error" } }
+      },
+      "delete": {
+        "operationId": "deleteTask",
+        "summary": "Delete a task",
+        "responses": { "200": { "description": "Deletion confirmation" }, "404": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/api/tasks/{taskId}/move": {
+      "parameters": [
+        { "name": "taskId", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "post": {
+        "operationId": "moveTask",
+        "summary": "Move a task to a list, date, or position; null date means unscheduled",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MoveTask" } } }
+        },
+        "responses": { "200": { "description": "Moved task" }, "404": { "$ref": "#/components/responses/Error" } }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "Error": {
+        "description": "Error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["error"],
+              "properties": { "error": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Color": { "type": "string", "enum": ["accent", "sage", "gold", "sky", "plum", "ink"] },
+      "Priority": { "type": "string", "enum": ["none", "low", "medium", "high"] },
+      "TaskOrderMode": { "type": "string", "enum": ["priority", "manual"] },
+      "List": {
+        "type": "object",
+        "required": ["id", "name", "color", "order", "taskOrder"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "color": { "$ref": "#/components/schemas/Color" },
+          "order": { "type": "integer", "minimum": 0 },
+          "taskOrder": { "$ref": "#/components/schemas/TaskOrderMode" }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "required": ["id", "title", "notes", "listId", "date", "time", "completed", "priority", "order", "dayOrder", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "notes": { "type": "string" },
+          "listId": { "type": "string" },
+          "date": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "time": { "type": ["string", "null"], "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "description": "Optional local time; requires date" },
+          "completed": { "type": "boolean" },
+          "priority": { "$ref": "#/components/schemas/Priority" },
+          "order": { "type": "integer", "minimum": 0 },
+          "dayOrder": { "type": "integer", "minimum": 0 },
+          "createdAt": { "type": "integer" },
+          "updatedAt": { "type": "integer" }
+        }
+      },
+      "Board": {
+        "allOf": [
+          { "$ref": "#/components/schemas/BoardInput" },
+          {
+            "type": "object",
+            "required": ["app", "version", "initialized", "revision"],
+            "properties": {
+              "app": { "const": "openagenda" },
+              "version": { "const": 1 },
+              "initialized": { "type": "boolean" },
+              "revision": { "type": "integer" }
+            }
+          }
+        ]
+      },
+      "BoardInput": {
+        "type": "object",
+        "required": ["lists", "tasks"],
+        "properties": {
+          "lists": { "type": "object", "additionalProperties": { "$ref": "#/components/schemas/List" } },
+          "tasks": { "type": "object", "additionalProperties": { "$ref": "#/components/schemas/Task" } }
+        }
+      },
+      "CalendarSettings": {
+        "type": "object",
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "calendarId": { "type": ["string", "null"] },
+          "includeUntimed": { "type": "boolean", "description": "Create all-day events for scheduled tasks without a time" },
+          "durationMinutes": { "type": "integer", "minimum": 5, "maximum": 720 }
+        }
+      },
+      "NewList": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "color": { "$ref": "#/components/schemas/Color" }
+        }
+      },
+      "UpdateList": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "color": { "$ref": "#/components/schemas/Color" },
+          "taskOrder": { "$ref": "#/components/schemas/TaskOrderMode" }
+        }
+      },
+      "NewTask": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string" },
+          "notes": { "type": "string" },
+          "listId": { "type": "string" },
+          "listName": { "type": "string" },
+          "date": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "time": { "type": ["string", "null"], "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "description": "Optional local time; requires date" },
+          "completed": { "type": "boolean" },
+          "priority": { "$ref": "#/components/schemas/Priority" }
+        }
+      },
+      "UpdateTask": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "notes": { "type": "string" },
+          "completed": { "type": "boolean" },
+          "priority": { "$ref": "#/components/schemas/Priority" },
+          "listId": { "type": "string" },
+          "listName": { "type": "string" },
+          "date": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "time": { "type": ["string", "null"], "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "description": "Optional local time; requires date" },
+          "index": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "MoveTask": {
+        "type": "object",
+        "properties": {
+          "listId": { "type": "string" },
+          "listName": { "type": "string" },
+          "date": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "time": { "type": ["string", "null"], "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "description": "Optional local time; requires date" },
+          "index": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

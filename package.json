@@ -1,0 +1,162 @@
+{
+  "name": "openagenda",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "main": "desktop/main.mjs",
+  "description": "A calm, tactile task planner — to-do lists and a calendar you drag tasks onto.",
+  "author": "Alec Milnes",
+  "license": "MIT",
+  "homepage": "https://github.com/amilnes1/openagenda#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amilnes1/openagenda.git"
+  },
+  "bugs": {
+    "url": "https://github.com/amilnes1/openagenda/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "vite",
+    "api": "node server/index.mjs",
+    "build": "tsc -b && vite build",
+    "start": "node server/index.mjs",
+    "preview": "vite preview",
+    "build:native": "node scripts/build-calendar-bridge.mjs",
+    "desktop": "npm run build && npm run build:native && electron .",
+    "desktop:pack": "npm run build && npm run build:native && node scripts/package-desktop.mjs --dir",
+    "desktop:pack:win": "npm run build && npm run build:native && node scripts/package-desktop.mjs --win --x64 --dir",
+    "desktop:dist": "npm run build && npm run build:native && node scripts/package-desktop.mjs",
+    "desktop:dist:win": "npm run build && npm run build:native && node scripts/package-desktop.mjs --win --x64",
+    "desktop:dist:universal": "npm run build && npm run build:native && node scripts/package-desktop.mjs --mac --universal",
+    "typecheck": "tsc -b --noEmit",
+    "test": "npm run test:unit && npm run test:api",
+    "test:unit": "vitest run",
+    "test:api": "node scripts/test-api.mjs",
+    "test:desktop": "node tests/e2e/desktop-qa.mjs",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.462.0",
+    "nanoid": "^5.1.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3",
+    "jsdom": "^25.0.1",
+    "playwright": "^1.62.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vitest": "^4.1.10"
+  },
+  "build": {
+    "appId": "org.openagenda.desktop",
+    "productName": "OpenAgenda",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "!desktop/*.test.mjs",
+      "server/*.mjs",
+      "!server/*.test.mjs",
+      "openapi.json",
+      "AUTHORS.md",
+      "CITATION.cff",
+      "CHANGELOG.md",
+      "LICENSE",
+      "README.md",
+      "package.json"
+    ],
+    "afterPack": "desktop/after-pack.mjs",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.png",
+      "hardenedRuntime": true,
+      "notarize": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
+      "extraResources": [
+        {
+          "from": "build/native",
+          "to": "native",
+          "filter": ["*.node"]
+        }
+      ],
+      "extendInfo": {
+        "NSCalendarsFullAccessUsageDescription": "OpenAgenda uses calendar access only to keep the tasks you choose synchronized with a calendar on this Mac.",
+        "NSHumanReadableCopyright": "Copyright © 2026 Alec Milnes"
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "legalTrademarks": "OpenAgenda"
+    },
+    "nsis": {
+      "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "OpenAgenda",
+      "deleteAppDataOnUninstall": false
+    },
+    "dmg": {
+      "title": "OpenAgenda ${version}",
+      "backgroundColor": "#f7f3ea",
+      "iconSize": 112,
+      "contents": [
+        {
+          "x": 150,
+          "y": 190,
+          "type": "file"
+        },
+        {
+          "x": 410,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+.setting-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   OpenAgenda — "Paper & Ink" design system
+   Warm paper surfaces, deep warm ink, a single vermilion accent.
+   ============================================================ */
+
+@theme {
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-card: 14px;
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --paper: #f7f3ea;
+  --paper-raised: #fdfbf5;
+  --paper-sunken: #efe9db;
+  --ink: #211d18;
+  --ink-soft: #4d463c;
+  --ink-faint: #857c6c;
+  --line: #e0d8c6;
+  --line-strong: #d0c6b0;
+
+  --accent: #e4572e;
+  --accent-ink: #b23c1a;
+  --accent-wash: #fbe6dc;
+
+  --sage: #5c7a5a;
+  --sage-wash: #e2ebdd;
+  --gold: #c08a2d;
+  --gold-wash: #f4e7cc;
+  --sky: #3d6f8e;
+  --sky-wash: #dde8ef;
+  --plum: #8a4f6d;
+  --plum-wash: #f0e0e8;
+
+  --shadow-sm: 0 1px 2px rgba(33, 29, 24, 0.06), 0 1px 1px rgba(33, 29, 24, 0.04);
+  --shadow-md: 0 4px 14px -4px rgba(33, 29, 24, 0.16), 0 2px 5px -2px rgba(33, 29, 24, 0.08);
+  --shadow-lg: 0 18px 40px -12px rgba(33, 29, 24, 0.28), 0 8px 18px -10px rgba(33, 29, 24, 0.18);
+  --shadow-drag: 0 22px 48px -10px rgba(33, 29, 24, 0.4);
+
+  --task-font: var(--font-sans);
+  --task-card-size: 14px;
+  --task-chip-size: 12px;
+  --task-rail-size: 12.5px;
+  --task-detail-size: 21px;
+  --task-weight: 540;
+  --selection-tone: var(--accent);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper: #17140f;
+  --paper-raised: #221e18;
+  --paper-sunken: #100d09;
+  --ink: #f2ebdd;
+  --ink-soft: #c8bfac;
+  --ink-faint: #8b8271;
+  --line: #332d24;
+  --line-strong: #443c30;
+
+  --accent: #f2724b;
+  --accent-ink: #f89173;
+  --accent-wash: #3a221a;
+
+  --sage: #8fb082;
+  --sage-wash: #26301f;
+  --gold: #d9ac5c;
+  --gold-wash: #332a17;
+  --sky: #74a6c4;
+  --sky-wash: #1a2833;
+  --plum: #c48aa6;
+  --plum-wash: #2f1f29;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px -4px rgba(0, 0, 0, 0.5), 0 2px 5px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 18px 40px -12px rgba(0, 0, 0, 0.7), 0 8px 18px -10px rgba(0, 0, 0, 0.5);
+  --shadow-drag: 0 22px 48px -10px rgba(0, 0, 0, 0.75);
+}
+
+[data-task-font="serif"] {
+  --task-font: var(--font-display);
+}
+
+[data-task-text-size="compact"] {
+  --task-card-size: 13px;
+  --task-chip-size: 11px;
+  --task-rail-size: 11.75px;
+  --task-detail-size: 19px;
+}
+
+[data-task-text-size="large"] {
+  --task-card-size: 15px;
+  --task-chip-size: 13px;
+  --task-rail-size: 13.5px;
+  --task-detail-size: 23px;
+}
+
+[data-task-text-weight="regular"] {
+  --task-weight: 440;
+}
+
+[data-task-text-weight="strong"] {
+  --task-weight: 640;
+}
+
+[data-selection-tone="sage"] {
+  --selection-tone: var(--sage);
+}
+
+[data-selection-tone="sky"] {
+  --selection-tone: var(--sky);
+}
+
+[data-selection-tone="plum"] {
+  --selection-tone: var(--plum);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-paper-sunken: var(--paper-sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-wash: var(--accent-wash);
+  --color-sage: var(--sage);
+  --color-gold: var(--gold);
+  --color-sky: var(--sky);
+  --color-plum: var(--plum);
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--paper);
+    /* Layered paper: a faint grain + a soft warm glow top-left */
+    background-image:
+      radial-gradient(120% 80% at 8% -10%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 55%),
+      radial-gradient(100% 70% at 100% 0%, color-mix(in srgb, var(--sky) 6%, transparent), transparent 60%);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv05";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Subtle paper grain overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+  }
+
+  [data-theme="dark"] body::before {
+    mix-blend-mode: screen;
+    opacity: 0.05;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 560;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--selection-tone) 32%, transparent);
+  }
+
+  button {
+    font-family: inherit;
+  }
+
+  input, textarea {
+    font-family: inherit;
+    color: inherit;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-faint);
+    background-clip: content-box;
+    border: 3px solid transparent;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .todo-title {
+    font-family: var(--task-font);
+    font-size: var(--task-card-size);
+    font-weight: var(--task-weight);
+    user-select: text;
+  }
+
+  .todo-title-chip {
+    font-size: var(--task-chip-size);
+  }
+
+  .todo-title-rail {
+    font-size: var(--task-rail-size);
+  }
+
+  .todo-title-detail {
+    font-size: var(--task-detail-size);
+  }
+
+  .native-picker-hidden::-webkit-calendar-picker-indicator {
+    width: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .card-shadow {
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* A thin decorative rule with a dot, used under section labels */
+  .rule-dotted {
+    background-image: radial-gradient(currentColor 1px, transparent 1.4px);
+    background-size: 7px 100%;
+    background-repeat: repeat-x;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  /* Focus ring consistent across the app */
+  .ring-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--accent);
+  }
+}
+
+/* Keep dragged elements crisp above the grain layer */
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+[data-desktop] .app-topbar {
+  -webkit-app-region: drag;
+}
+
+[data-desktop="mac"] .app-topbar {
+  padding-left: 92px;
+}
+
+[data-desktop] .app-topbar button,
+[data-desktop] .app-topbar input,
+[data-desktop] .app-topbar [tabindex] {
+  -webkit-app-region: no-drag;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
