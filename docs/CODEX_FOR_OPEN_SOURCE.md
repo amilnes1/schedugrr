@@ -48,28 +48,39 @@ local-first, agent-friendly desktop applications.
 
 **Why does this repository qualify?** (500-character limit)
 
-> OpenAgenda is an active MIT-licensed local-first desktop planner that pairs a
-> humane board and calendar with a documented loopback API for local AI tools.
-> It demonstrates a privacy-preserving pattern other agent-friendly desktop
-> apps can reuse: one portable data model, no hosted account, sandboxed UI, and
-> native Calendar integration. [Add only verified stars, downloads, users,
-> issues, or outside contributions before submission.]
+> OpenAgenda is an MIT-licensed, local-first desktop planner with a documented
+> loopback API that lets local AI tools inspect and update the same tasks a
+> person sees. It offers a reusable privacy-preserving pattern for
+> agent-friendly desktop software: no hosted account, a portable data model,
+> sandboxed UI, native calendar integration, cross-platform CI, and a tested
+> Windows prerelease.
+
+**Why does your project need Codex Security?** (500-character limit)
+
+> OpenAgenda exposes a loopback API that can change personal planning data and
+> packages a sandboxed Electron renderer alongside native calendar integration.
+> Codex Security would help review authentication and origin boundaries, IPC
+> and native bridge safety, dependency risk, path and import validation, and
+> calendar OAuth and token-storage work before releases across Windows, macOS,
+> and Linux.
 
 **How will you use API credits?** (500-character limit)
 
-> I will use credits for Codex-assisted pull-request review, issue reproduction,
-> release QA, security-boundary checks, cross-platform packaging, and maintainer
-> automation. Planned open-source work includes provider-neutral calendar
-> adapters and an optional MCP server, with tests and documentation kept in sync
-> across macOS, Windows, and Linux.
+> I will use API credits for Codex-assisted pull-request review, issue
+> reproduction, release QA, security-boundary testing, dependency and
+> documentation maintenance, and contributor support. Planned work includes
+> provider-neutral calendar adapters, an optional MCP server, stronger local API
+> authentication and permissions, and reproducible Windows, macOS, and Linux
+> packaging with automated end-to-end tests.
 
 **Anything else we should know?** (500-character limit)
 
-> OpenAgenda keeps personal planning data on the user's own computer and gives
-> local tools a narrow, documented API instead of requiring screen scraping or
-> a hosted account. The repository discloses AI-assisted development, preserves
-> clear human maintainership, and includes contribution, security, citation,
-> release, and roadmap documentation.
+> OpenAgenda was built with AI-assisted development under human review and is
+> maintained by me as creator and release owner. The repository includes an MIT
+> license, contributing guide, security policy, roadmap, OpenAPI contract,
+> citation metadata, cross-platform CI, and a checksummed Windows prerelease.
+> Personal planning data stays on the user's machine; the local API binds to
+> loopback only.
 
 The form also requires the ChatGPT-account email, public GitHub username, public
 repository URL, and OpenAI Organization ID. Add those directly at submission;
@@ -78,8 +89,8 @@ do not commit private account identifiers to the repository.
 ## Evidence to include with the application
 
 - Public MIT-licensed repository and tagged release.
-- Signed and notarized macOS installer plus source archive.
-- Screenshots or a short demo of Board, Calendar, and Calendar sync.
+- Tested, checksummed Windows prerelease plus source archive.
+- Board and Calendar screenshots in the README; add a short demo when available.
 - Passing UI, API, native-coordination, and packaged-app tests.
 - `CONTRIBUTING.md`, `SECURITY.md`, `ROADMAP.md`, and current issues.
 - A concise explanation of the loopback API and local-first threat model.

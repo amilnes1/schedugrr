@@ -1,10 +1,11 @@
 # OpenAgenda roadmap
 
-## 0.2 — public macOS foundation
+## 0.2 — public desktop foundation
 
 - Complete the OpenAgenda rename and preserve OpenBoard data.
-- Ship one-way native Calendar sync for calendars configured on macOS.
-- Publish a Developer ID-signed and notarized DMG and ZIP through GitHub.
+- Keep one-way native Calendar sync available to macOS source builds.
+- Keep macOS build-from-source support without promising a signed or notarized
+  public artifact.
 - Publish an x64 Windows NSIS installer and ZIP built on a Windows runner.
 - Document the local API, privacy model, contribution process, and release path.
 
@@ -15,7 +16,6 @@
   volume justifies the certificate or service cost.
 - Add direct Google Calendar and Microsoft Graph adapters using desktop OAuth
   authorization-code flows with PKCE and OS-protected token storage.
-- Add an optional Homebrew cask after the macOS release has stabilized.
 
 ## Later, after real-world sync feedback
 

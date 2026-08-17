@@ -27,6 +27,22 @@ Scheduling and list membership are **independent axes**: putting a task on a dat
 never changes which list it belongs to. That's what makes moving things around
 feel effortless.
 
+## Preview
+
+### Board
+
+Today's timed schedule stays beside priority-aware lists, with manual ordering
+preserved whenever you rearrange tasks.
+
+![OpenAgenda Board view with today's schedule and four task lists](./docs/images/board.png)
+
+### Calendar
+
+Timed and date-only tasks share a month view, while the Unscheduled tray keeps
+the backlog close enough to drag onto any day.
+
+![OpenAgenda Calendar view with scheduled tasks and the Unscheduled tray](./docs/images/calendar.png)
+
 OpenAgenda is local-first and has no account or cloud dependency. The browser
 uses `localStorage` on its own. When the included local server is running, it
 also keeps the same board in `data/openagenda.json` so scripts and LLM tools can
