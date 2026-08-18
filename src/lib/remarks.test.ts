@@ -10,11 +10,16 @@ beforeEach(() => {
 });
 
 describe("completion remarks", () => {
-  it("uses the playful snark voice by default", () => {
+  it("uses the passive-aggressive and mildly insulting snark voice by default", () => {
     useRemarks.getState().show("File the report");
     const notice = useRemarks.getState().notice;
     expect(notice?.mode).toBe("snark");
     expect(notice?.taskTitle).toBe("File the report");
+    expect(REMARK_MESSAGES.some((message) => message.text === "Oh, good. We were all starting to wonder.")).toBe(true);
+    expect(REMARK_MESSAGES.some((message) => message.text === "Well done. The bar was low, but you cleared it.")).toBe(true);
+    expect(REMARK_MESSAGES.some((message) => message.text === "The checkbox was beginning to worry.")).toBe(false);
+    expect(REMARK_MESSAGES.some((message) => message.text === "The list is losing ground.")).toBe(false);
+    expect(REMARK_MESSAGES.some((message) => message.text === "The overdue badge has left the chat.")).toBe(false);
   });
 
   it("moves into the warm message pool during a quick streak", () => {

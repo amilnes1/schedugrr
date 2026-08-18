@@ -12,6 +12,10 @@ All notable changes to ScheduGrr are documented here.
   default; both speaking modes use nonrepeating, streak-aware message pools.
 - Added accessible, reduced-motion-aware paper-chit feedback anchored to the
   task checkbox and an in-settings voice preview.
+- Sharpened the full Snark library into consistently passive-aggressive,
+  mildly insulting backhanded praise while keeping Cheer sincerely supportive.
+- Replaced the torn completion-note edges with clear, high-contrast top and
+  bottom rules for easier visual scanning.
 - Applied the same completion feedback to live LLM/API edits without replaying
   completed tasks during initial synchronization.
 - Expanded unit and packaged-app coverage for the new identity and settings.

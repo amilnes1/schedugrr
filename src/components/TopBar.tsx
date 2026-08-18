@@ -342,7 +342,7 @@ function AppearancePanel() {
 }
 
 const remarkDescriptions = {
-  snark: "ScheduGrr will judge you (affectionately).",
+  snark: "ScheduGrr is politely disappointed in your timing.",
   cheer: "ScheduGrr believes in you (sincerely).",
   hush: "ScheduGrr says nothing. It's fine. This is fine.",
 } as const;
