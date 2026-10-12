@@ -23,19 +23,17 @@ jobs:
         run: npm run test:tauri:api
         env:
           SCHEDUGRR_QA_EXECUTABLE: src-tauri/target/x86_64-pc-windows-msvc/release/schedugrr.exe
-      - name: Install native Windows UI driver
-        shell: pwsh
-        run: |
-          cargo install tauri-driver --locked
-          $edgePath = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe').'(default)'
-          $version = (Get-Item $edgePath).VersionInfo.ProductVersion
-          Invoke-WebRequest "https://msedgedriver.microsoft.com/$version/edgedriver_win64.zip" -OutFile "$env:RUNNER_TEMP\edgedriver.zip"
-          Expand-Archive "$env:RUNNER_TEMP\edgedriver.zip" -DestinationPath "$env:RUNNER_TEMP\edgedriver"
-          "$env:RUNNER_TEMP\edgedriver" | Out-File -FilePath $env:GITHUB_PATH -Append
       - name: Test native Windows WebView2 app
         run: npm run test:windows
         env:
           SCHEDUGRR_QA_EXECUTABLE: src-tauri/target/x86_64-pc-windows-msvc/release/schedugrr.exe
+      - name: Upload native UI failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ScheduGrr-Windows-UI-diagnostics
+          path: release/windows-qa/
+          if-no-files-found: ignore
       - name: Prepare portable ZIP and enforce 50 MB size budget
         shell: pwsh
         run: |

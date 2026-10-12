@@ -19,7 +19,7 @@ is shipped in the desktop application.
 | Local LLM API and OpenAPI | Rust HTTP server, same loopback address/routes | Differential tests against the Node reference |
 | Atomic JSON persistence | Atomic replacement in the same directory | Rust concurrency/rollback tests and relaunch |
 | macOS Calendar | Existing EventKit logic with C ABI instead of N-API | Adapter compiles, status check, existing calendar coordination tests |
-| Windows | WebView2, per-user NSIS installer, portable executable | Windows compile check and build/API/native WebDriver jobs; native Windows run pending |
+| Windows | WebView2, per-user NSIS installer, portable executable | Windows compile check and build/API/native WebView2 jobs; native Windows run pending |
 | Menus, zoom/fullscreen, window bounds | Tauri native window and menu APIs | Native smoke test |
 | Single instance | Tauri single-instance plugin plus data-directory lock | Rust locking test |
 
@@ -63,8 +63,10 @@ npm run desktop:dist
 `test:desktop` exercises the actual Rust backend with Playwright WebKit on
 macOS and Chromium on other platforms. This checks the rendering engine and
 application flows, but is not a replacement for native window integration.
-`test:windows` drives the actual Windows app with tauri-driver and Edge
-WebDriver. It is included in the Windows packaging workflow.
+`test:windows` launches the actual packaged Windows app with an isolated
+profile and attaches Playwright to its native WebView2 instance over a
+loopback debugging port. It is included in the Windows packaging workflow;
+normal launches do not enable the test debugging port.
 
 Calendar permission grants and actual writes to a personal calendar require
 an opt-in manual test; automated QA does not grant access or create events in
