@@ -88,6 +88,7 @@ try {
   const name = page.getByRole("textbox", { name: "List name for Work" });
   await name.fill("Workroom"); await name.press("Enter");
   await page.getByRole("heading", { name: "Workroom", exact: true }).waitFor();
+  await waitFor(async () => (await request("/api/lists")).lists.some((list) => list.name === "Workroom"), "persisting the list rename before API edits");
   const { task } = await request("/api/tasks", "POST", { title: "Windows QA task", listName: "Workroom", date: "2026-10-12", time: "09:30", priority: "high" });
   await page.getByText("Windows QA task", { exact: true }).first().click();
   await page.getByLabel("Task time", { exact: true }).fill("14:15");
