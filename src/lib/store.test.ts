@@ -59,6 +59,12 @@ describe("tasks", () => {
     expect(state().tasks.t2).toBeUndefined();
     expect(selectTasksForList(state(), "a").map((t) => t.id)).toEqual(["t1", "t3"]);
   });
+
+  it("clears every task while preserving lists", () => {
+    state().clearAllTasks();
+    expect(state().tasks).toEqual({});
+    expect(Object.keys(state().lists)).toEqual(["a", "b"]);
+  });
 });
 
 describe("moveTaskToList", () => {

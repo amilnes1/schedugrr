@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, format } from "date-fns";
 import { useBoard, selectTasksForDay } from "@/lib/store";
@@ -9,7 +10,23 @@ import { Checkbox } from "@/components/Checkbox";
 import { PriorityMark } from "@/components/PriorityMark";
 import { toggleTaskWithRemark } from "@/lib/remarks";
 
-export function DayScheduleRail({ onOpenTask }: { onOpenTask: (id: string) => void }) {
+const SCHEDULE_DROP_PREFIX = "schedule:";
+
+export function scheduleDropId(date: string) {
+  return `${SCHEDULE_DROP_PREFIX}${date}`;
+}
+
+export function scheduleDateFromDropId(id: string) {
+  return id.startsWith(SCHEDULE_DROP_PREFIX) ? id.slice(SCHEDULE_DROP_PREFIX.length) : null;
+}
+
+export function DayScheduleRail({
+  onOpenTask,
+  draggingTaskId,
+}: {
+  onOpenTask: (id: string) => void;
+  draggingTaskId: string | null;
+}) {
   const lists = useBoard((state) => state.lists);
   const tasks = useBoard((state) => state.tasks);
   const [date, setDate] = useState(todayKey);
@@ -17,13 +34,25 @@ export function DayScheduleRail({ onOpenTask }: { onOpenTask: (id: string) => vo
   const scheduled = useMemo(() => selectTasksForDay({ tasks }, date), [date, tasks]);
   const parsedDate = fromKey(date);
   const relative = relativeLabel(date);
+  const dropHelpId = `schedule-drop-help-${date}`;
+  const { setNodeRef, isOver } = useDroppable({
+    id: scheduleDropId(date),
+    data: { type: "schedule", date },
+  });
 
   const moveDay = (amount: number) => setDate(toKey(addDays(parsedDate, amount)));
 
   return (
     <aside
+      ref={setNodeRef}
       aria-label={`${relative} schedule`}
-      className="flex w-[244px] shrink-0 flex-col overflow-hidden rounded-[18px] border border-line/80 bg-paper-raised/75 shadow-[var(--shadow-sm)]"
+      aria-describedby={dropHelpId}
+      className={cn(
+        "flex w-[244px] shrink-0 flex-col overflow-hidden rounded-[18px] border bg-paper-raised/75 shadow-[var(--shadow-sm)] transition-[border-color,background-color,box-shadow] duration-150",
+        isOver
+          ? "border-accent/70 bg-accent-wash/35 shadow-[var(--shadow-md)]"
+          : "border-line/80",
+      )}
     >
       <div className="border-b border-line px-3.5 pb-3 pt-3.5">
         <div className="flex items-center justify-between gap-2">
@@ -77,7 +106,7 @@ export function DayScheduleRail({ onOpenTask }: { onOpenTask: (id: string) => vo
             <span className="mb-3 block h-px w-10 bg-line-strong" aria-hidden />
             <p className="font-display text-[14px] text-ink-soft">A clear day.</p>
             <p className="mt-1 text-[11.5px] leading-relaxed text-ink-faint">
-              Schedule a task from its card or the calendar.
+              Drag a board card here to schedule it for {relative.toLowerCase()}.
             </p>
           </div>
         ) : (
@@ -132,8 +161,21 @@ export function DayScheduleRail({ onOpenTask }: { onOpenTask: (id: string) => vo
         )}
       </div>
 
-      <div className="border-t border-line px-3.5 py-2.5 font-mono text-[10px] text-ink-faint">
-        {scheduled.length} {scheduled.length === 1 ? "task" : "tasks"} scheduled
+      <div
+        className={cn(
+          "border-t border-line px-3.5 py-2.5 font-mono text-[10px] transition-colors",
+          draggingTaskId && isOver
+            ? "bg-accent-wash/70 font-medium text-accent-ink"
+            : "text-ink-faint",
+        )}
+      >
+        <span id={dropHelpId}>
+          {draggingTaskId
+            ? isOver
+              ? `Release to schedule for ${relative}`
+              : `Drop here to schedule for ${relative}`
+            : `${scheduled.length} ${scheduled.length === 1 ? "task" : "tasks"} scheduled`}
+        </span>
       </div>
     </aside>
   );

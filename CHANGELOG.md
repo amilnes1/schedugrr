@@ -2,6 +2,20 @@
 
 All notable changes to ScheduGrr are documented here.
 
+## Unreleased
+
+- Replaced the Electron desktop shell and bundled Node server with Tauri 2,
+  an embedded Rust API, and the operating system's webview. The measured
+  Apple Silicon app shrank from 320.3 MiB to 5.48 MiB; the Mac DMG is 2.83 MiB.
+- Preserved existing board data, desktop preferences, native JSON export,
+  menus, window behavior, and opt-in macOS EventKit synchronization.
+- Replaced periodic full-board polling with revision events and queued writes.
+- Reduced macOS graphics memory while preserving the paper-and-ink appearance.
+- Added archive/restore for completed list items, clear-all tasks, and improved
+  drag-to-schedule handling while preserving list membership.
+- Added Rust/API parity tests and Windows NSIS/portable packaging with native
+  WebView2 UI checks. Native Windows release validation remains a CI gate.
+
 ## 0.3.0 — 2026-08-17
 
 - Renamed the project from OpenAgenda to ScheduGrr across the desktop app,

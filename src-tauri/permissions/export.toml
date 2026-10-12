@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-export-document"
+description = "Save the current board only to a file selected in the native Save dialog."
+commands.allow = ["export_document"]

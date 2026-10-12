@@ -1,3 +1,4 @@
+import { confirmAction } from "@/lib/dialog";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -12,6 +13,7 @@ import {
   Palette,
   RotateCcw,
   Sun,
+  Trash2,
   Upload,
 } from "lucide-react";
 import { useBoard } from "@/lib/store";
@@ -24,6 +26,7 @@ import { CalendarSyncPanel } from "./CalendarSyncPanel";
 import { previewRemark } from "@/lib/remarks";
 
 export function TopBar() {
+  const [fileError, setFileError] = useState<string | null>(null);
   const view = useUI((s) => s.view);
   const setView = useUI((s) => s.setView);
   const theme = useUI((s) => s.theme);
@@ -37,12 +40,15 @@ export function TopBar() {
       const doc = parseDocument(await file.text());
       useBoard.getState().replaceDocument(doc);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Could not import that file.");
+      setFileError(err instanceof Error ? err.message : "Could not import that file.");
     }
   };
 
   return (
-    <header className="app-topbar flex items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-10">
+    <header data-tauri-drag-region className="app-topbar flex items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-10">
+      {fileError && <div role="alert" className="fixed bottom-5 left-5 z-[100] max-w-md rounded-xl border border-line bg-paper-raised p-4 text-ink shadow-lg">
+        {fileError}<button className="ml-3 underline" onClick={() => setFileError(null)}>Dismiss</button>
+      </div>}
       {/* Wordmark */}
       <div className="flex shrink-0 items-baseline gap-2.5">
         <div className="flex items-center gap-2">
@@ -151,7 +157,7 @@ export function TopBar() {
                 icon={<Download className="h-4 w-4" />}
                 onClick={() => {
                   const { lists, tasks } = useBoard.getState();
-                  exportDocument(lists, tasks);
+                  void exportDocument(lists, tasks).catch((error: unknown) => setFileError(error instanceof Error ? error.message : String(error)));
                   close();
                 }}
               >
@@ -169,14 +175,26 @@ export function TopBar() {
               <div className="my-1 h-px bg-line" />
               <MenuItem
                 icon={<RotateCcw className="h-4 w-4" />}
-                onClick={() => {
-                  if (confirm("Replace everything with the sample board?")) {
+                onClick={async () => {
+                  if (await confirmAction("Replace everything with the sample board?")) {
                     useBoard.getState().resetToSeed();
                   }
                   close();
                 }}
               >
                 Reset to sample
+              </MenuItem>
+              <MenuItem
+                danger
+                icon={<Trash2 className="h-4 w-4" />}
+                onClick={async () => {
+                  if (await confirmAction("Clear every task? Your lists and settings will stay. This cannot be undone.")) {
+                    useBoard.getState().clearAllTasks();
+                  }
+                  close();
+                }}
+              >
+                Clear all tasks…
               </MenuItem>
             </div>
           )}

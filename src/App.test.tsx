@@ -50,6 +50,7 @@ describe("App", () => {
     expect(within(schedule).getByText("Day schedule")).toBeTruthy();
     expect(within(schedule).getByText("Sketch the week ahead")).toBeTruthy();
     expect(within(schedule).getByText("9:00 AM")).toBeTruthy();
+    expect(schedule.getAttribute("aria-describedby")).toContain("schedule-drop-help-");
   });
 
   it("renames a list by clicking its title", () => {
@@ -151,6 +152,26 @@ describe("App", () => {
     expect(screen.getByRole("status", { name: /Completed: A sample task/ })).toBeTruthy();
   });
 
+  it("clears all tasks from settings without removing lists", async () => {
+    act(() => {
+      useBoard.getState().resetToSeed();
+      useUI.getState().setView("board");
+    });
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const listCount = Object.keys(useBoard.getState().lists).length;
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "More options" }));
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Clear all tasks…" })); });
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      "Clear every task? Your lists and settings will stay. This cannot be undone.",
+    );
+    expect(useBoard.getState().tasks).toEqual({});
+    expect(Object.keys(useBoard.getState().lists)).toHaveLength(listCount);
+    confirmSpy.mockRestore();
+  });
+
   it("labels the local tool surface as LLM friendly", () => {
     render(<App />);
     expect(screen.getByLabelText("LLM friendly. LLMs can easily view and update tasks")).toBeTruthy();
@@ -170,7 +191,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "More options" }));
     fireEvent.click(screen.getByRole("button", { name: /Calendar sync/ }));
     const settings = await screen.findByRole("region", { name: "Calendar sync settings" });
-    expect(within(settings).getByText(/macOS desktop app/)).toBeTruthy();
+    expect(await within(settings).findByText(/macOS desktop app/)).toBeTruthy();
     fetchMock.mockRestore();
   });
 });

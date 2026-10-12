@@ -48,6 +48,8 @@ export interface Task {
   /** Optional local wall-clock time `HH:mm`; requires a scheduled date. */
   time: string | null;
   completed: boolean;
+  /** Archived items stay in the document but are hidden from active views. */
+  archived?: boolean;
   priority: Priority;
   /** Sort position within its list (ascending). */
   order: number;

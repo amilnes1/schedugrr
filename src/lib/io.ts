@@ -9,7 +9,7 @@ interface DocumentFile {
 }
 
 /** Serialize the board to a downloadable JSON file. */
-export function exportDocument(lists: Record<string, List>, tasks: Record<string, Task>) {
+export async function exportDocument(lists: Record<string, List>, tasks: Record<string, Task>) {
   const doc: DocumentFile = {
     app: "schedugrr",
     version: 1,
@@ -17,11 +17,17 @@ export function exportDocument(lists: Record<string, List>, tasks: Record<string
     lists,
     tasks,
   };
+  const name = `schedugrr-${new Date().toISOString().slice(0, 10)}.json`;
+  if ("__TAURI_INTERNALS__" in window) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("export_document", { name, content: JSON.stringify(doc, null, 2) });
+    return;
+  }
   const blob = new Blob([JSON.stringify(doc, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `schedugrr-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = name;
   a.click();
   URL.revokeObjectURL(url);
 }

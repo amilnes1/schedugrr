@@ -30,6 +30,19 @@ function safeStorage(): SyncStateStorage {
   };
 }
 
+let preferencesTimer: ReturnType<typeof setTimeout> | undefined;
+function saveNativePreferences(storage: SyncStateStorage) {
+  if (typeof window === "undefined" || !new URLSearchParams(window.location.search).has("desktop")) return;
+  clearTimeout(preferencesTimer);
+  preferencesTimer = setTimeout(() => {
+    const value = storage.getItem("schedugrr.ui.v1");
+    if (value !== null) void fetch("/api/preferences", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ "schedugrr.ui.v1": value }), keepalive: true,
+    }).catch(() => {});
+  }, 80);
+}
+
 function withLegacyMigration(storage: SyncStateStorage): StateStorage {
   const legacyKeys: Record<string, string[]> = {
     "schedugrr.v1": ["openagenda.v1", "openboard.v1"],
@@ -49,7 +62,10 @@ function withLegacyMigration(storage: SyncStateStorage): StateStorage {
       }
       return null;
     },
-    setItem: (key, value) => storage.setItem(key, value),
+    setItem: (key, value) => {
+      storage.setItem(key, value);
+      if (key === "schedugrr.ui.v1") saveNativePreferences(storage);
+    },
     removeItem: (key) => storage.removeItem(key),
   };
 }

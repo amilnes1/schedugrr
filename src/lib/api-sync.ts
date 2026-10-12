@@ -68,7 +68,10 @@ export function useScheduGrrApiSync() {
     let pushing = false;
     let revision: number | null = null;
     let pushTimer: number | null = null;
-    let pollTimer: number | null = null;
+    let events: EventSource | null = null;
+    let editSequence = 0;
+    let pulling = false;
+    let announcedRevision: number | null = null;
     let unsubscribe: (() => void) | null = null;
 
     const apply = (remote: RemoteBoard, announceCompletions = false) => {
@@ -89,6 +92,7 @@ export function useScheduGrrApiSync() {
     const push = async () => {
       if (!active || applyingRemote || pushing) return;
       pushing = true;
+      const sentSequence = editSequence;
       const { lists, tasks } = useBoard.getState();
       try {
         const remote = await request<RemoteBoard>("/api/board", {
@@ -103,11 +107,15 @@ export function useScheduGrrApiSync() {
         setConnection("local", revision, error instanceof Error ? error.message : "API unavailable");
       } finally {
         pushing = false;
+        // Edits made while a write was in flight still need their own write.
+        if (active && editSequence !== sentSequence) schedulePush();
+        else if (active && announcedRevision !== null && announcedRevision > (revision ?? -1)) void poll();
       }
     };
 
     const schedulePush = () => {
       if (!active || applyingRemote) return;
+      editSequence += 1;
       if (pushTimer !== null) window.clearTimeout(pushTimer);
       pushTimer = window.setTimeout(() => {
         pushTimer = null;
@@ -116,15 +124,25 @@ export function useScheduGrrApiSync() {
     };
 
     const poll = async () => {
-      if (!active || pushing || pushTimer !== null) return;
+      if (!active || pushing || pulling || pushTimer !== null) return;
+      pulling = true;
+      const requestedSequence = editSequence;
       try {
         const remote = await request<RemoteBoard>("/api/board");
-        if (!active) return;
+        if (!active || pushing || pushTimer !== null || editSequence !== requestedSequence) return;
         if (remote.initialized && remote.revision !== revision) apply(remote, true);
         else setConnection("connected", remote.revision);
       } catch (error) {
         if (!active) return;
         setConnection("local", revision, error instanceof Error ? error.message : "API unavailable");
+      }
+      finally {
+        pulling = false;
+        if (active && !pushing && pushTimer === null && announcedRevision !== null && announcedRevision > (revision ?? -1)) {
+          // An event may have arrived while a previous read was in flight.
+          // EventSource reconnects handle network errors; avoid a tight retry loop.
+          if (useApiConnection.getState().status === "connected") void poll();
+        }
       }
     };
 
@@ -137,7 +155,15 @@ export function useScheduGrrApiSync() {
         else await push();
         if (!active) return;
         unsubscribe = useBoard.subscribe(schedulePush);
-        pollTimer = window.setInterval(() => void poll(), 1_500);
+        events = new EventSource(`${apiBase}/api/events`);
+        events.onmessage = (event) => {
+          announcedRevision = Number(event.data);
+          if (announcedRevision > (revision ?? -1)) void poll();
+          else setConnection("connected", revision);
+        };
+        events.onerror = () => {
+          if (active) setConnection("local", revision, "Reconnecting to the local API");
+        };
       } catch (error) {
         if (!active) return;
         setConnection("local", null, error instanceof Error ? error.message : "API unavailable");
@@ -150,7 +176,7 @@ export function useScheduGrrApiSync() {
       active = false;
       unsubscribe?.();
       if (pushTimer !== null) window.clearTimeout(pushTimer);
-      if (pollTimer !== null) window.clearInterval(pollTimer);
+      events?.close();
     };
   }, []);
 }

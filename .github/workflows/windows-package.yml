@@ -1,14 +1,10 @@
 name: Windows package
-
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
-
+    tags: ["v*"]
 permissions:
   contents: write
-
 jobs:
   package:
     runs-on: windows-latest
@@ -18,62 +14,55 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: dtolnay/rust-toolchain@stable
       - run: npm ci
       - run: npm test
       - run: npm run desktop:dist:win
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
+      - name: Test packaged Rust API
+        run: npm run test:tauri:api
         env:
-          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-      - name: Test packaged Windows app
-        run: npm run test:desktop
-      - name: Write SHA-256 checksums
+          SCHEDUGRR_QA_EXECUTABLE: src-tauri/target/x86_64-pc-windows-msvc/release/schedugrr.exe
+      - name: Install native Windows UI driver
         shell: pwsh
         run: |
-          Get-ChildItem release\ScheduGrr-*.exe, release\ScheduGrr-*.zip |
-            Get-FileHash -Algorithm SHA256 |
-            ForEach-Object { "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)" } |
-            Set-Content release\SHA256SUMS-windows.txt
+          cargo install tauri-driver --locked
+          $edgePath = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe').'(default)'
+          $version = (Get-Item $edgePath).VersionInfo.ProductVersion
+          Invoke-WebRequest "https://msedgedriver.microsoft.com/$version/edgedriver_win64.zip" -OutFile "$env:RUNNER_TEMP\edgedriver.zip"
+          Expand-Archive "$env:RUNNER_TEMP\edgedriver.zip" -DestinationPath "$env:RUNNER_TEMP\edgedriver"
+          "$env:RUNNER_TEMP\edgedriver" | Out-File -FilePath $env:GITHUB_PATH -Append
+      - name: Test native Windows WebView2 app
+        run: npm run test:windows
+        env:
+          SCHEDUGRR_QA_EXECUTABLE: src-tauri/target/x86_64-pc-windows-msvc/release/schedugrr.exe
+      - name: Prepare portable ZIP and enforce 50 MB size budget
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release | Out-Null
+          Copy-Item src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe release/
+          $exe = 'src-tauri/target/x86_64-pc-windows-msvc/release/schedugrr.exe'
+          if ((Get-Item $exe).Length -ge 50000000) { throw 'Application exceeds the 50 MB size budget' }
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          Compress-Archive -Path $exe -DestinationPath "release/ScheduGrr-$version-x64.zip"
+          Get-ChildItem release/*.exe,release/*.zip | Get-FileHash -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)" } | Set-Content release/SHA256SUMS-windows.txt
       - uses: actions/upload-artifact@v7
         with:
           name: ScheduGrr-Windows-${{ github.ref_name }}
-          path: |
-            release/ScheduGrr-*-setup.exe
-            release/ScheduGrr-*.zip
-            release/SHA256SUMS-windows.txt
+          path: release/*
           if-no-files-found: error
-      - name: Publish unsigned Windows prerelease
+      - name: Publish Windows prerelease
         if: startsWith(github.ref, 'refs/tags/v')
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $version = "${{ github.ref_name }}".TrimStart("v")
           @(
-            "ScheduGrr $version is an open-source desktop planner preview."
-            ""
-            "Windows x64 downloads:"
-            ""
-            "- ScheduGrr-$version-x64-setup.exe — interactive installer"
-            "- ScheduGrr-$version-x64.zip — portable archive"
-            "- SHA256SUMS-windows.txt — download checksums"
-            ""
-            "This preview has passed ScheduGrr's unit, API, and packaged Electron"
-            "tests on a GitHub-hosted Windows runner. The binaries are not yet"
-            "Authenticode-signed, so Windows may display an Unknown Publisher or"
-            "Microsoft Defender SmartScreen warning. Review the source and checksum"
-            "before installing."
-            ""
-            "See CHANGELOG.md for the complete release notes."
+            'ScheduGrr Tauri desktop preview for Windows x64.'
+            ''
+            'Includes an NSIS installer, portable ZIP, and SHA-256 checksums.'
+            'Uses the shared Microsoft WebView2 runtime; the installer obtains it if missing.'
+            'Board, calendar, task editing, local API, and persistence are covered by automated tests.'
+            'Native account-calendar sync remains macOS-only. This preview is unsigned.'
           ) | Set-Content release/RELEASE_NOTES.md
-
-          $releaseFiles = @(
-            (Get-ChildItem release/ScheduGrr-*-setup.exe).FullName
-            (Get-ChildItem release/ScheduGrr-*.zip).FullName
-            (Get-Item release/SHA256SUMS-windows.txt).FullName
-          )
-
-          gh release create "${{ github.ref_name }}" $releaseFiles `
-            --verify-tag `
-            --prerelease `
-            --title "ScheduGrr ${{ github.ref_name }}" `
-            --notes-file release/RELEASE_NOTES.md
+          gh release create '${{ github.ref_name }}' release/*.exe release/*.zip release/SHA256SUMS-windows.txt --verify-tag --prerelease --title 'ScheduGrr ${{ github.ref_name }}' --notes-file release/RELEASE_NOTES.md

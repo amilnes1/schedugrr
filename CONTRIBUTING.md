@@ -10,13 +10,17 @@ npm install
 npm run dev
 ```
 
+Desktop development also requires stable Rust and the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/).
+
 Before opening a pull request:
 
 ```bash
 npm run typecheck
 npm test
 npm run build
+npm run test:native  # Rust backend tests
 npm run desktop:pack  # when changing the desktop shell or packaging
+npm run test:tauri:api
 ```
 
 Please include tests for behavior changes. UI work should remain keyboard

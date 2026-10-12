@@ -32,6 +32,9 @@ interface StoreState {
   renameList: (id: string, name: string) => void;
   setListColor: (id: string, color: ColorKey) => void;
   setListTaskOrder: (id: string, mode: TaskOrderMode) => void;
+  /** Archive only completed items; unfinished items remain active. */
+  archiveListTasks: (id: string) => void;
+  restoreListTasks: (id: string) => void;
   removeList: (id: string) => void;
   reorderLists: (orderedIds: string[]) => void;
 
@@ -40,6 +43,7 @@ interface StoreState {
   updateTask: (id: string, patch: Partial<Omit<Task, "id" | "createdAt">>) => void;
   toggleTask: (id: string) => void;
   removeTask: (id: string) => void;
+  clearAllTasks: () => void;
 
   /** Move a task into a list at a given index (defaults to the end). */
   moveTaskToList: (taskId: string, listId: string, index?: number) => void;
@@ -81,6 +85,17 @@ function dayTaskIds(tasks: Record<string, Task>, date: string): string[] {
     .map((t) => t.id);
 }
 
+function setListTasksArchived(tasks: Record<string, Task>, listId: string, archived: boolean) {
+  return Object.fromEntries(
+    Object.entries(tasks).map(([id, task]) => [
+      id,
+      task.listId === listId && Boolean(task.archived) !== archived && (!archived || task.completed)
+        ? { ...task, archived }
+        : task,
+    ]),
+  );
+}
+
 export const useBoard = create<StoreState>()(
   persist(
     (set) => ({
@@ -118,6 +133,12 @@ export const useBoard = create<StoreState>()(
             ? { lists: { ...s.lists, [id]: { ...s.lists[id], taskOrder } } }
             : s,
         ),
+
+      archiveListTasks: (id) =>
+        set((s) => s.lists[id] ? { tasks: setListTasksArchived(s.tasks, id, true) } : s),
+
+      restoreListTasks: (id) =>
+        set((s) => s.lists[id] ? { tasks: setListTasksArchived(s.tasks, id, false) } : s),
 
       removeList: (id) =>
         set((s) => {
@@ -199,6 +220,8 @@ export const useBoard = create<StoreState>()(
           delete tasks[id];
           return { tasks };
         }),
+
+      clearAllTasks: () => set({ tasks: {} }),
 
       moveTaskToList: (taskId, listId, index) =>
         set((s) => {
@@ -305,7 +328,7 @@ export function selectTasksForList(
   const mode = s.lists?.[listId]?.taskOrder ?? "priority";
   const priorityRank: Record<Priority, number> = { high: 3, medium: 2, low: 1, none: 0 };
   return Object.values(s.tasks)
-    .filter((t) => t.listId === listId)
+    .filter((t) => t.listId === listId && !t.archived)
     .sort((a, b) =>
       mode === "priority"
         ? priorityRank[b.priority] - priorityRank[a.priority] || a.order - b.order
@@ -318,7 +341,7 @@ export function selectTasksForDay(
   date: string,
 ): Task[] {
   return Object.values(s.tasks)
-    .filter((t) => t.date === date)
+    .filter((t) => t.date === date && !t.archived)
     .sort((a, b) => {
       const byTime = (a.time ?? "99:99").localeCompare(b.time ?? "99:99");
       return byTime || a.dayOrder - b.dayOrder;
@@ -327,6 +350,6 @@ export function selectTasksForDay(
 
 export function selectUnscheduled(s: Pick<StoreState, "tasks">): Task[] {
   return Object.values(s.tasks)
-    .filter((t) => t.date == null && !t.completed)
+    .filter((t) => t.date == null && !t.completed && !t.archived)
     .sort((a, b) => a.order - b.order);
 }

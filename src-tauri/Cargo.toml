@@ -1,0 +1,36 @@
+[package]
+name = "schedugrr"
+version = "0.3.0"
+edition = "2021"
+authors = ["Alec Milnes"]
+license = "MIT"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+cc = "1"
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-single-instance = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "sync", "time"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+include_dir = "0.7"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+url = "2"
+fs2 = "0.4"
+tempfile = "3"
+percent-encoding = "2"
+open = "5"
+leveldb = { package = "rusty-leveldb", version = "3" }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

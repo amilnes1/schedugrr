@@ -9,9 +9,17 @@ lists, then drag tasks onto a calendar—or between days—to plan by hand.
 ScheduGrr is a desktop-first, local application. It is designed to run on the
 owner's machine rather than as a hosted multi-user service.
 
-An Electron shell now packages the tested React and Node application as a
-native desktop install. The bundled renderer remains sandboxed, while the
-local API and filesystem persistence stay in the main process.
+The desktop app uses Tauri 2 with the existing React interface and a compiled
+Rust backend. It uses the operating system's webview instead of bundling
+Chromium and Node.js; the local API and filesystem persistence run in the
+native app process.
+
+The measured Apple Silicon app is **5.48 MiB**, down from **320.3 MiB** with
+Electron—about **98% smaller**. The compressed Mac DMG is **2.83 MiB**.
+These are local build measurements, not Windows package sizes or RAM limits;
+see the [size and memory results](docs/TAURI-MIGRATION-RESULTS.md).
+The Tauri migration is on the source branch; older tagged downloads may still
+use Electron until a new binary release is published.
 
 ScheduGrr is built around two linked views:
 
@@ -102,13 +110,13 @@ npm start          # serves the built app and API at http://127.0.0.1:8787
 Native desktop run and packaging:
 
 ```bash
-npm run desktop         # build and launch Electron from source
+npm run desktop         # build and launch Tauri from source
 npm run desktop:pack    # unpacked platform-native application
 npm run desktop:dist    # installer/archive for the current platform
-npm run desktop:dist:win # x64 Windows NSIS installer + ZIP
+npm run desktop:dist:win # x64 Windows NSIS installer; CI also produces a ZIP
 ```
 
-On macOS, distribution artifacts appear under `release/` as a DMG and ZIP.
+On macOS, the app and DMG appear under `src-tauri/target/release/bundle/`.
 The app stores its board in `~/Library/Application Support/ScheduGrr/schedugrr.json`
 rather than inside the application bundle. See [Desktop distribution](./docs/DISTRIBUTION.md)
 for signing, notarization, and release details.
@@ -129,7 +137,7 @@ Other scripts:
 ```bash
 npm run build      # typecheck + production build
 npm run test       # UI/store tests + local API integration tests
-npm run test:desktop # packaged Electron UI, API, and relaunch QA
+npm run test:desktop # packaged Tauri UI, API, and relaunch QA
 npm run typecheck  # types only
 npm run dev:web    # frontend only; localStorage mode
 ```
@@ -137,10 +145,10 @@ npm run dev:web    # frontend only; localStorage mode
 ## Architecture
 
 - **React 19 + TypeScript + Vite**
-- **Electron** for the installable desktop shell, native menus, and app lifecycle
+- **Tauri 2 + Rust** for the installable desktop shell, native menus, local API, and app lifecycle
 - **Zustand** for state, persisted to `localStorage` (with an in-memory
   fallback so it never throws in private-mode or SSR)
-- A dependency-free **Node.js local API** with atomic JSON-file persistence
+- A compiled **Rust local API** in the desktop app, with a dependency-free Node.js reference for browser development
 - A small native **EventKit bridge** for opt-in macOS Calendar synchronization
 - **@dnd-kit** for drag and drop
 - **Tailwind CSS v4** for layout, with a bespoke CSS-variable theme for the
@@ -166,11 +174,12 @@ server/
   app.mjs           # loopback HTTP API + production static server
   board-store.mjs   # validated domain operations + atomic file writes
 openapi.json        # machine-readable LLM/tool contract
-desktop/
-  main.mjs             # secure native window + bundled loopback API
-  calendar-sync.mjs    # one-way task-to-calendar coordination + mappings
-native/macos/
-  calendar_bridge.mm   # N-API bridge to Apple EventKit
+src-tauri/
+  src/main.rs         # native window, menus, export, and app lifecycle
+  src/backend.rs      # embedded UI, loopback API, and revision events
+  src/store.rs        # compatible JSON data model and atomic persistence
+  src/calendar.rs     # one-way task-to-calendar coordination + mappings
+  native/calendar.mm  # C ABI bridge to Apple EventKit
 build/                  # application icon + macOS signing entitlements
 ```
 
@@ -209,7 +218,7 @@ to `"priority"` through the list menu or API whenever desired.
 The complete OpenAPI 3.1 document is available at
 [`/openapi.json`](http://127.0.0.1:8787/openapi.json). It describes task search,
 list CRUD, scheduling, moving, completion, deletion, and full-board import.
-External edits appear in an open browser within about 1.5 seconds. If an LLM
+External edits appear through revision notifications as soon as the local API publishes the change. If an LLM
 or script completes a task while the UI is open, the selected Remark voice
 responds there too; initial synchronization does not replay old completions.
 
@@ -257,7 +266,7 @@ high-to-low by priority; an explicit indexed move becomes the saved manual order
 - MIT licensed and intentionally provider-neutral
 - No authentication, analytics, hosted database, or secret keys
 - Personal task data is ignored by Git (`data/*.json`)
-- Sandboxed desktop renderer with Node integration disabled and a restrictive CSP
+- System webview with restricted Tauri capabilities and a restrictive CSP
 - API and UI tests run without external services
 - Contributions are welcome; see [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Windows packaging and QA are documented in [docs/WINDOWS.md](./docs/WINDOWS.md)
@@ -268,3 +277,7 @@ high-to-low by priority; an explicit indexed move becomes the saved manual order
 ## License
 
 [MIT](./LICENSE)
+
+## Tauri migration
+
+Desktop builds require stable Rust and the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/). The desktop runtime embeds the UI and Rust API; Node.js is used only for development/build tooling. See [migration and feature coverage](docs/TAURI-MIGRATION.md) and [distribution](docs/DISTRIBUTION.md) for data migration, builds, testing, and platform differences.

@@ -15,9 +15,10 @@ the operating system's per-user application-data directory (for example,
 and OpenBoard data is read only as a migration source. These files
 and common environment files should remain outside version control.
 
-The Electron renderer is sandboxed with Node integration disabled, context
-isolation enabled, permission requests denied, external navigation restricted,
-and a Content Security Policy applied to the bundled UI. Public binaries should
+The Tauri system webview has explicit native capabilities, restricted external
+navigation, and a Content Security Policy. Native export writes only to a
+user-selected destination in the system Save dialog. Node.js is not shipped or
+exposed to the webview. Public binaries should
 also be signed—and on macOS, notarized—as described in
 `docs/DISTRIBUTION.md`. Windows builds can run unsigned, but public unsigned
 installers trigger an Unknown Publisher/SmartScreen warning and should be

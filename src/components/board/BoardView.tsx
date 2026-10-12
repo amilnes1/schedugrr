@@ -5,10 +5,12 @@ import {
   KeyboardSensor,
   PointerSensor,
   closestCorners,
+  pointerWithin,
+  rectIntersection,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
-  type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
@@ -17,24 +19,45 @@ import { useBoard, selectSortedLists, selectTasksForList } from "@/lib/store";
 import type { StoreSnapshot } from "@/lib/store";
 import { TaskCard } from "@/components/TaskCard";
 import { ListColumn } from "./ListColumn";
-import { DayScheduleRail } from "./DayScheduleRail";
+import { DayScheduleRail, scheduleDateFromDropId } from "./DayScheduleRail";
 
-interface Target {
-  listId: string;
-  index: number;
-}
+type Target =
+  | { type: "list"; listId: string; index: number }
+  | { type: "schedule"; date: string };
+
+const boardCollisionDetection: CollisionDetection = (args) => {
+  const scheduleContainers = args.droppableContainers.filter(({ id }) =>
+    scheduleDateFromDropId(String(id)),
+  );
+  const scheduleArgs = { ...args, droppableContainers: scheduleContainers };
+  const scheduleCollision = pointerWithin(scheduleArgs)[0] ?? rectIntersection(scheduleArgs)[0];
+  return scheduleCollision ? [scheduleCollision] : closestCorners(args);
+};
 
 /** Resolve which list + index a drag is currently over. */
 function resolveTarget(state: StoreSnapshot, overId: string): Target | null {
+  const scheduleDate = scheduleDateFromDropId(overId);
+  if (scheduleDate) return { type: "schedule", date: scheduleDate };
+
   if (overId.startsWith("list:")) {
     const listId = overId.slice(5);
     if (!state.lists[listId]) return null;
-    return { listId, index: selectTasksForList(state, listId).length };
+    return { type: "list", listId, index: selectTasksForList(state, listId).length };
   }
   const task = state.tasks[overId];
   if (!task) return null;
   const ids = selectTasksForList(state, task.listId).map((t) => t.id);
-  return { listId: task.listId, index: Math.max(0, ids.indexOf(overId)) };
+  return { type: "list", listId: task.listId, index: Math.max(0, ids.indexOf(overId)) };
+}
+
+export function commitBoardDrop(state: StoreSnapshot, taskId: string, overId: string) {
+  const target = resolveTarget(state, overId);
+  if (!target) return;
+  if (target.type === "schedule") {
+    state.moveTaskToDay(taskId, target.date);
+    return;
+  }
+  state.moveTaskToList(taskId, target.listId, target.index);
 }
 
 export function BoardView({ onOpenTask }: { onOpenTask: (id: string) => void }) {
@@ -61,25 +84,12 @@ export function BoardView({ onOpenTask }: { onOpenTask: (id: string) => void }) 
 
   const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id));
 
-  const onDragOver = (e: DragOverEvent) => {
-    const { active, over } = e;
-    if (!over) return;
-    const state = useBoard.getState();
-    const activeT = state.tasks[String(active.id)];
-    if (!activeT) return;
-    const target = resolveTarget(state, String(over.id));
-    if (target && target.listId !== activeT.listId) {
-      state.moveTaskToList(String(active.id), target.listId, target.index);
-    }
-  };
-
   const onDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     setActiveId(null);
     if (!over) return;
     const state = useBoard.getState();
-    const target = resolveTarget(state, String(over.id));
-    if (target) state.moveTaskToList(String(active.id), target.listId, target.index);
+    commitBoardDrop(state, String(active.id), String(over.id));
   };
 
   const moveList = (index: number, dir: -1 | 1) => {
@@ -93,14 +103,13 @@ export function BoardView({ onOpenTask }: { onOpenTask: (id: string) => void }) 
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={boardCollisionDetection}
       onDragStart={onDragStart}
-      onDragOver={onDragOver}
       onDragEnd={onDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
       <div className="flex h-full min-w-0 gap-5 px-6 pb-8 pt-2 lg:px-10">
-        <DayScheduleRail onOpenTask={onOpenTask} />
+        <DayScheduleRail onOpenTask={onOpenTask} draggingTaskId={activeId} />
 
         <div className="no-scrollbar flex min-w-0 flex-1 items-start gap-5 overflow-x-auto">
           {sortedLists.map((list, i) => (

@@ -1,4 +1,5 @@
-#include <node_api.h>
+#include <cstdlib>
+#include <cstring>
 
 #import <EventKit/EventKit.h>
 #import <Foundation/Foundation.h>
@@ -15,8 +16,6 @@ enum class Operation {
 };
 
 struct AsyncContext {
-  napi_async_work work = nullptr;
-  napi_deferred deferred = nullptr;
   Operation operation;
   std::string input;
   std::string output;
@@ -133,8 +132,12 @@ void RequestAccess(AsyncContext *context) {
     dispatch_semaphore_signal(semaphore);
   };
 
-  if (@available(macOS 14.0, *)) {
+  if ([store respondsToSelector:@selector(requestFullAccessToEventsWithCompletion:)]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+    // Selector availability was checked above for compatibility with macOS 12.
     [store requestFullAccessToEventsWithCompletion:completion];
+#pragma clang diagnostic pop
   } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -298,114 +301,21 @@ void SyncTasks(AsyncContext *context) {
   SerializeJSON(result, context->output, context->error);
 }
 
-void ExecuteAsync(napi_env, void *data) {
-  AsyncContext *context = static_cast<AsyncContext *>(data);
+} // namespace
+
+extern "C" char *schedugrr_calendar_call(int operation, const char *input) {
   @autoreleasepool {
-    @try {
-      switch (context->operation) {
-        case Operation::RequestAccess:
-          RequestAccess(context);
-          break;
-        case Operation::ListCalendars:
-          ListCalendars(context);
-          break;
-        case Operation::SyncTasks:
-          SyncTasks(context);
-          break;
-      }
-    } @catch (NSException *exception) {
-      context->error = ToStdString(exception.reason ?: @"Unexpected EventKit failure.");
+    AsyncContext context;
+    if (input) context.input = input;
+    switch (operation) {
+      case 0: return strdup(ToStdString(AuthorizationStatusString()).c_str());
+      case 1: RequestAccess(&context); break;
+      case 2: ListCalendars(&context); break;
+      case 3: SyncTasks(&context); break;
+      default: context.error = "Unknown calendar operation";
     }
+    if (!context.error.empty()) SerializeJSON(@{@"error": ToNSString(context.error)}, context.output, context.error);
+    return strdup(context.output.c_str());
   }
 }
-
-void CompleteAsync(napi_env env, napi_status status, void *data) {
-  AsyncContext *context = static_cast<AsyncContext *>(data);
-  if (status != napi_ok && context->error.empty()) context->error = "Native calendar operation was cancelled.";
-
-  if (!context->error.empty()) {
-    napi_value message;
-    napi_create_string_utf8(env, context->error.c_str(), context->error.size(), &message);
-    napi_value error;
-    napi_create_error(env, nullptr, message, &error);
-    napi_reject_deferred(env, context->deferred, error);
-  } else {
-    napi_value output;
-    napi_create_string_utf8(env, context->output.c_str(), context->output.size(), &output);
-    napi_resolve_deferred(env, context->deferred, output);
-  }
-
-  napi_delete_async_work(env, context->work);
-  delete context;
-}
-
-napi_value QueueOperation(napi_env env, Operation operation, std::string input = {}) {
-  auto *context = new AsyncContext();
-  context->operation = operation;
-  context->input = std::move(input);
-
-  napi_value promise;
-  napi_create_promise(env, &context->deferred, &promise);
-  napi_value resourceName;
-  napi_create_string_utf8(env, "ScheduGrrCalendar", NAPI_AUTO_LENGTH, &resourceName);
-  napi_create_async_work(env, nullptr, resourceName, ExecuteAsync, CompleteAsync, context, &context->work);
-  napi_queue_async_work(env, context->work);
-  return promise;
-}
-
-bool ReadStringArgument(napi_env env, napi_callback_info info, std::string &value) {
-  size_t argc = 1;
-  napi_value argv[1];
-  napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
-  if (argc != 1) return false;
-  napi_valuetype type;
-  napi_typeof(env, argv[0], &type);
-  if (type != napi_string) return false;
-  size_t length = 0;
-  napi_get_value_string_utf8(env, argv[0], nullptr, 0, &length);
-  value.resize(length + 1);
-  napi_get_value_string_utf8(env, argv[0], value.data(), value.size(), &length);
-  value.resize(length);
-  return true;
-}
-
-napi_value GetAuthorizationStatus(napi_env env, napi_callback_info) {
-  @autoreleasepool {
-    std::string status = ToStdString(AuthorizationStatusString());
-    napi_value value;
-    napi_create_string_utf8(env, status.c_str(), status.size(), &value);
-    return value;
-  }
-}
-
-napi_value RequestFullAccess(napi_env env, napi_callback_info) {
-  return QueueOperation(env, Operation::RequestAccess);
-}
-
-napi_value GetCalendars(napi_env env, napi_callback_info) {
-  return QueueOperation(env, Operation::ListCalendars);
-}
-
-napi_value SynchronizeTasks(napi_env env, napi_callback_info info) {
-  std::string input;
-  if (!ReadStringArgument(env, info, input)) {
-    napi_throw_type_error(env, nullptr, "syncTasks expects one JSON string argument");
-    return nullptr;
-  }
-  return QueueOperation(env, Operation::SyncTasks, std::move(input));
-}
-
-napi_value Initialize(napi_env env, napi_value exports) {
-  napi_property_descriptor properties[] = {
-    {"authorizationStatus", nullptr, GetAuthorizationStatus, nullptr, nullptr, nullptr, napi_default, nullptr},
-    {"requestFullAccess", nullptr, RequestFullAccess, nullptr, nullptr, nullptr, napi_default, nullptr},
-    {"listCalendars", nullptr, GetCalendars, nullptr, nullptr, nullptr, napi_default, nullptr},
-    {"syncTasks", nullptr, SynchronizeTasks, nullptr, nullptr, nullptr, napi_default, nullptr},
-  };
-  napi_define_properties(env, exports, sizeof(properties) / sizeof(properties[0]), properties);
-  return exports;
-}
-
-}  // namespace
-
-NAPI_MODULE(NODE_GYP_MODULE_NAME, Initialize)
+extern "C" void schedugrr_calendar_free(char *result) { free(result); }

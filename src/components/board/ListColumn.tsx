@@ -1,7 +1,8 @@
+import { confirmAction } from "@/lib/dialog";
 import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { ChevronLeft, ChevronRight, ListOrdered, MoreHorizontal, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, ListOrdered, MoreHorizontal, Trash2 } from "lucide-react";
 import { useBoard } from "@/lib/store";
 import { COLOR_KEYS, type List, type Task } from "@/lib/types";
 import { colorVars, COLOR_LABELS } from "@/lib/colors";
@@ -26,11 +27,13 @@ export function ListColumn({
   onMove: (dir: -1 | 1) => void;
   onOpenTask: (id: string) => void;
 }) {
-  const { addTask, renameList, setListColor, setListTaskOrder, removeList } = useBoard();
+  const { addTask, renameList, setListColor, setListTaskOrder, archiveListTasks, restoreListTasks, removeList, tasks: allTasks } = useBoard();
   const { setNodeRef, isOver } = useDroppable({ id: `list:${list.id}`, data: { type: "list", listId: list.id } });
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(list.name);
 
+  const archivedCount = Object.values(allTasks).filter((task) => task.listId === list.id && task.archived).length;
+  const totalCount = tasks.length + archivedCount;
   const remaining = tasks.filter((t) => !t.completed).length;
   const c = colorVars[list.color];
 
@@ -144,12 +147,32 @@ export function ListColumn({
               </MenuItem>
               <div className="my-1 h-px bg-line" />
               <MenuItem
+                icon={<Archive className="h-4 w-4" />}
+                onClick={() => {
+                  archiveListTasks(list.id);
+                  close();
+                }}
+              >
+                Archive completed items
+              </MenuItem>
+              {archivedCount > 0 && (
+                <MenuItem
+                  icon={<ArchiveRestore className="h-4 w-4" />}
+                  onClick={() => {
+                    restoreListTasks(list.id);
+                    close();
+                  }}
+                >
+                  Restore archived items ({archivedCount})
+                </MenuItem>
+              )}
+              <MenuItem
                 danger
                 icon={<Trash2 className="h-4 w-4" />}
-                onClick={() => {
+                onClick={async () => {
                   if (
-                    tasks.length === 0 ||
-                    confirm(`Delete "${list.name}" and its ${tasks.length} task(s)?`)
+                    totalCount === 0 ||
+                    await confirmAction(`Delete "${list.name}" and its ${totalCount} task(s)?`)
                   ) {
                     removeList(list.id);
                   }
@@ -184,7 +207,7 @@ export function ListColumn({
 
         {tasks.length === 0 && (
           <p className="px-2 py-3 text-center text-[12.5px] text-ink-faint/70">
-            Drop a task here, or add one below.
+            {archivedCount > 0 ? "Archived items are hidden. Add a task below." : "Drop a task here, or add one below."}
           </p>
         )}
 
