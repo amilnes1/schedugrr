@@ -24,7 +24,20 @@ jobs:
         env:
           SCHEDUGRR_QA_EXECUTABLE: src-tauri/target/x86_64-pc-windows-msvc/release/schedugrr.exe
       - name: Test native Windows WebView2 app
-        run: npm run test:windows
+        shell: pwsh
+        # WebView2 150+ ignores debug environment variables in elevated hosts.
+        # Run UI QA at medium integrity, as Tauri's own Windows CI does.
+        # https://github.com/MicrosoftEdge/WebView2Feedback/issues/5645
+        run: |
+          if (-not (Get-Command gsudo -ErrorAction SilentlyContinue)) {
+            choco install gsudo -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Could not install the test privilege helper' }
+          }
+          $identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+          icacls "$env:GITHUB_WORKSPACE" /grant "${identity}:(OI)(CI)M" /Q
+          if ($LASTEXITCODE -ne 0) { throw 'Could not grant the runner user workspace access' }
+          gsudo --integrity Medium node tests/e2e/tauri-windows-qa.mjs "$env:SCHEDUGRR_QA_EXECUTABLE"
+          exit $LASTEXITCODE
         env:
           SCHEDUGRR_QA_EXECUTABLE: src-tauri/target/x86_64-pc-windows-msvc/release/schedugrr.exe
       - name: Upload native UI failure diagnostics

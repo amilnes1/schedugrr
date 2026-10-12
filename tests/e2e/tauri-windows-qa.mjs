@@ -15,7 +15,7 @@ await writeFile(join(profile, "window-state.json"), JSON.stringify({ width: 1000
 const artifacts = resolve("release/windows-qa");
 await mkdir(artifacts, { recursive: true });
 const port = await unusedPort();
-const executable = resolve(process.env.SCHEDUGRR_QA_EXECUTABLE ?? "src-tauri/target/release/schedugrr.exe");
+const executable = resolve(process.argv[2] ?? process.env.SCHEDUGRR_QA_EXECUTABLE ?? "src-tauri/target/release/schedugrr.exe");
 let child, browser, page;
 let output = "";
 const pageErrors = [];

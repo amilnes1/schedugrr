@@ -37,10 +37,17 @@ the same profile and default API port.
 ## QA and signing
 
 CI compiles and tests the Rust backend on Windows, macOS, and Linux. The Windows
-package workflow runs API parity checks and native WebView2 tests using
-`tauri-driver` and the matching Microsoft Edge WebDriver. Locally, install those
-drivers and run `npm run test:windows` with `SCHEDUGRR_QA_EXECUTABLE` pointing to
-the built executable.
+package workflow runs API parity checks and launches the packaged executable
+with a temporary profile. Playwright attaches directly to that app's WebView2
+instance through a loopback debugging port. No separate browser or EdgeDriver
+installation is required. Run `npm run test:windows` with
+`SCHEDUGRR_QA_EXECUTABLE` pointing to the built executable. The debugging port
+is enabled only in the test subprocess; normal app launches do not enable it.
+GitHub-hosted Windows runners start elevated, so CI runs the UI test at normal
+user privilege: recent WebView2 versions ignore debugging environment variables
+in elevated processes. No WebView2 security policy is disabled.
+Failure screenshots, page markup, and app logs are saved under
+`release/windows-qa/` and uploaded by CI if the native UI test fails.
 
 Local migration QA was performed on macOS. The updated Windows workflow must
 run successfully before a Windows release is considered verified.

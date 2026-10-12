@@ -48,7 +48,7 @@ shared WebView2 runtime rather than bundling a private browser engine.
 The Windows x64 target passed cross-target Rust checking and linting. This Mac
 cannot execute the Windows installer or WebView2 application. Windows CI now
 builds the NSIS installer and portable ZIP, enforces a 50 MB executable budget,
-runs API parity checks, and runs native WebDriver UI QA. That Windows run must
+runs API parity checks, and runs native WebView2 UI QA. That Windows run must
 pass before publishing a Windows release.
 
 The EventKit implementation retains the previous one-way calendar behavior
