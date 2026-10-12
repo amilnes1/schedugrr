@@ -23,7 +23,23 @@ async function click(xpath) { const id=await element(xpath); await wd(endpoint(`
 async function input(xpath,value) { const id=await element(xpath); await wd(endpoint(`/element/${id}/clear`), {}); await wd(endpoint(`/element/${id}/value`), {text:value}); }
 async function script(script,args=[]) {return wd(endpoint("/execute/sync"),{script,args});}
 async function request(path, method="GET", body) {const r=await fetch(`http://127.0.0.1:${port}${path}`,{method,headers:{"Content-Type":"application/json"},...(body===undefined?{}:{body:JSON.stringify(body)})});assert.ok(r.ok);return r.json()}
-async function launch() { const created=await wd("/session",{capabilities:{alwaysMatch:{"tauri:options":{application:executable}}}});session=created.sessionId;await waitFor(async()=>{try{return (await request("/api/health")).ok}catch{return false}});await element("//*[normalize-space(text())='ScheduGrr']"); }
+async function launch() {
+  // The app uses this explicit WebView2 profile (see create_window in main.rs).
+  // EdgeDriver otherwise looks for DevToolsActivePort in a different temp folder.
+  const created = await wd("/session", {
+    capabilities: {
+      alwaysMatch: {
+        "tauri:options": {
+          application: executable,
+          webviewOptions: { userDataFolder: join(profile, "WebKit") },
+        },
+      },
+    },
+  });
+  session = created.sessionId;
+  await waitFor(async () => { try { return (await request("/api/health")).ok; } catch { return false; } });
+  await element("//*[normalize-space(text())='ScheduGrr']");
+}
 try {
   await waitFor(async()=>{try{return (await fetch(base+"/status")).ok}catch{return false}});
   await launch();
