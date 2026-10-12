@@ -36,3 +36,13 @@ unsigned. Follow Tauri's signing guides when preparing a public release:
 
 No publishing or deployment is performed by the local packaging commands.
 Do not commit certificates, passwords, or notarization credentials.
+
+
+## Publishing a cross-platform preview
+
+Tag builds stage the tested Windows installer, ZIP, and checksums in a draft
+GitHub release. They do not publish automatically. Add the Mac Apple Silicon
+DMG and app ZIP, verify all asset checksums and the tag's CI/native test runs,
+and publish the draft only when every required check has passed. State the
+supported architectures, shared WebView2 requirement, and signing/notarization
+status in the release notes. A rerun refuses to overwrite a published release.

@@ -2,7 +2,7 @@
 
 All notable changes to ScheduGrr are documented here.
 
-## Unreleased
+## 0.3.0 — 2026-10-12
 
 - Replaced the Electron desktop shell and bundled Node server with Tauri 2,
   an embedded Rust API, and the operating system's webview. The measured
@@ -15,8 +15,6 @@ All notable changes to ScheduGrr are documented here.
   drag-to-schedule handling while preserving list membership.
 - Added Rust/API parity tests and Windows NSIS/portable packaging with native
   WebView2 UI checks. Native Windows release validation remains a CI gate.
-
-## 0.3.0 — 2026-08-17
 
 - Renamed the project from OpenAgenda to ScheduGrr across the desktop app,
   local API, packaging, documentation, and release automation.

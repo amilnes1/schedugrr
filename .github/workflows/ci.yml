@@ -32,5 +32,6 @@ jobs:
       - run: npm run test:native
       - run: npm run desktop:pack
       - run: npm run test:tauri:api
-      - run: npx playwright install --with-deps webkit chromium
+      - name: Install the platform UI test engine
+        run: npx playwright install --with-deps ${{ runner.os == 'macOS' && 'webkit' || 'chromium' }}
       - run: npm run test:desktop

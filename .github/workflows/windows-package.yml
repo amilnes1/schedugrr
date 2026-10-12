@@ -62,7 +62,7 @@ jobs:
           name: ScheduGrr-Windows-${{ github.ref_name }}
           path: release/*
           if-no-files-found: error
-      - name: Publish Windows prerelease
+      - name: Stage Windows downloads in a draft release
         if: startsWith(github.ref, 'refs/tags/v')
         shell: pwsh
         env:
@@ -76,4 +76,15 @@ jobs:
             'Board, calendar, task editing, local API, and persistence are covered by automated tests.'
             'Native account-calendar sync remains macOS-only. This preview is unsigned.'
           ) | Set-Content release/RELEASE_NOTES.md
-          gh release create '${{ github.ref_name }}' release/*.exe release/*.zip release/SHA256SUMS-windows.txt --verify-tag --prerelease --title 'ScheduGrr ${{ github.ref_name }}' --notes-file release/RELEASE_NOTES.md
+          $tag = '${{ github.ref_name }}'
+          $files = @((Get-ChildItem release/*.exe,release/*.zip).FullName) + @((Get-Item release/SHA256SUMS-windows.txt).FullName)
+          $existing = gh release view $tag --json isDraft 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            if (-not ($existing | ConvertFrom-Json).isDraft) {
+              throw 'This release is already published; refusing to replace tested downloads'
+            }
+            gh release upload $tag @files --clobber
+          } else {
+            gh release create $tag @files --verify-tag --draft --prerelease --title "ScheduGrr $tag" --notes-file release/RELEASE_NOTES.md
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Could not stage the Windows release downloads' }

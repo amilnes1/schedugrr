@@ -18,8 +18,10 @@ The measured Apple Silicon app is **5.48 MiB**, down from **320.3 MiB** with
 Electron—about **98% smaller**. The compressed Mac DMG is **2.83 MiB**.
 These are local build measurements, not Windows package sizes or RAM limits;
 see the [size and memory results](docs/TAURI-MIGRATION-RESULTS.md).
-The Tauri migration is on the source branch; older tagged downloads may still
-use Electron until a new binary release is published.
+Download the Tauri preview from [GitHub Releases](https://github.com/amilnes1/schedugrr/releases).
+Choose macOS Apple Silicon (arm64) or Windows x64. Older v0.2.x downloads use
+Electron. Preview binaries are not notarized on macOS or Authenticode-signed
+on Windows; see the release notes and SHA-256 checksums.
 
 ScheduGrr is built around two linked views:
 
