@@ -49,8 +49,23 @@ in elevated processes. No WebView2 security policy is disabled.
 Failure screenshots, page markup, and app logs are saved under
 `release/windows-qa/` and uploaded by CI if the native UI test fails.
 
-Local migration QA was performed on macOS. The updated Windows workflow must
-run successfully before a Windows release is considered verified.
+The [Windows packaging and native UI run](https://github.com/amilnes1/schedugrr/actions/runs/38296646007) passed on October 12, 2026
+for commit `f8fda5c`. It verified unit tests, Rust tests, 40 API parity checks,
+UI editing, API notifications, task time/completion, the small-window layout,
+and persistence after relaunch. The NSIS installer built successfully; no
+public release was published by this branch run.
+
+Measured Windows x64 artifacts:
+
+| Artifact | Bytes | MiB |
+| --- | ---: | ---: |
+| NSIS installer | 1,996,676 | 1.90 |
+| Portable ZIP | 2,488,226 | 2.37 |
+| Executable inside the ZIP | 5,801,984 | 5.53 |
+
+The downloaded artifacts matched their published SHA-256 checksums. These
+sizes exclude the shared WebView2 runtime, which the installer obtains if
+missing.
 
 The preview is unsigned. Windows may display Unknown Publisher/SmartScreen.
 Public release signing can be configured with Tauri's Windows signing options:

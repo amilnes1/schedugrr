@@ -45,11 +45,13 @@ shared WebView2 runtime rather than bundling a private browser engine.
 
 ## Windows and Calendar limitations
 
-The Windows x64 target passed cross-target Rust checking and linting. This Mac
-cannot execute the Windows installer or WebView2 application. Windows CI now
-builds the NSIS installer and portable ZIP, enforces a 50 MB executable budget,
-runs API parity checks, and runs native WebView2 UI QA. That Windows run must
-pass before publishing a Windows release.
+The Windows x64 target passed cross-target Rust checking and linting on the Mac,
+then passed [native Windows CI](https://github.com/amilnes1/schedugrr/actions/runs/38296646007) on October 12, 2026. The Windows workflow
+built the NSIS installer and portable ZIP, passed unit/Rust/API checks and
+native WebView2 UI/relaunch tests, and enforced the 50 MB executable budget.
+The installer is 1.90 MiB, ZIP 2.37 MiB, and executable 5.53 MiB. Downloaded
+artifacts matched their SHA-256 checksums. The shared WebView2 runtime is
+separate. This branch run uploaded CI artifacts without publishing a release.
 
 The EventKit implementation retains the previous one-way calendar behavior
 through a C ABI instead of N-API. The adapter compiles and availability/settings

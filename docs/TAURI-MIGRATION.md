@@ -19,7 +19,7 @@ is shipped in the desktop application.
 | Local LLM API and OpenAPI | Rust HTTP server, same loopback address/routes | Differential tests against the Node reference |
 | Atomic JSON persistence | Atomic replacement in the same directory | Rust concurrency/rollback tests and relaunch |
 | macOS Calendar | Existing EventKit logic with C ABI instead of N-API | Adapter compiles, status check, existing calendar coordination tests |
-| Windows | WebView2, per-user NSIS installer, portable executable | Windows compile check and build/API/native WebView2 jobs; native Windows run pending |
+| Windows | WebView2, per-user NSIS installer, portable executable | [Windows build/API/native WebView2 QA passed](https://github.com/amilnes1/schedugrr/actions/runs/38296646007) |
 | Menus, zoom/fullscreen, window bounds | Tauri native window and menu APIs | Native smoke test |
 | Single instance | Tauri single-instance plugin plus data-directory lock | Rust locking test |
 
