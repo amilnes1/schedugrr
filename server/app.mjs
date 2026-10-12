@@ -96,6 +96,16 @@ function match(segment, pathname) {
 async function apiRoute(req, res, url, store, { calendar = null } = {}) {
   const { pathname, searchParams } = url;
 
+  if (req.method === "GET" && pathname === "/api/events") {
+    res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
+    const send = (board) => res.write(`data: ${board.revision}\n\n`);
+    const unsubscribe = store.subscribe(send);
+    send(await store.read());
+    const heartbeat = setInterval(() => res.write(": keepalive\n\n"), 30_000);
+    req.on("close", () => { clearInterval(heartbeat); unsubscribe(); });
+    return;
+  }
+
   if (req.method === "GET" && pathname === "/api/health") {
     const board = await store.read();
     return json(res, 200, {
